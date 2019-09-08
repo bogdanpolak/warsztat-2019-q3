@@ -1,0 +1,427 @@
+﻿{
+	"FDBS": {
+		"Version": 15,
+		"Manager": {
+			"UpdatesRegistry": true,
+			"TableList": [
+				{
+					"class": "Table",
+					"Name": "mtabBooks",
+					"SourceName": "Table",
+					"TabID": 0,
+					"EnforceConstraints": false,
+					"MinimumCapacity": 50,
+					"CheckNotNull": false,
+					"ColumnList": [
+						{
+							"class": "Column",
+							"Name": "ISBN",
+							"SourceName": "ISBN",
+							"SourceID": 1,
+							"DataType": "WideString",
+							"Size": 20,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "ISBN",
+							"SourceSize": 20
+						},
+						{
+							"class": "Column",
+							"Name": "Title",
+							"SourceName": "Title",
+							"SourceID": 2,
+							"DataType": "WideString",
+							"Size": 100,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Title",
+							"SourceSize": 100
+						},
+						{
+							"class": "Column",
+							"Name": "Authors",
+							"SourceName": "Authors",
+							"SourceID": 3,
+							"DataType": "WideString",
+							"Size": 100,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Authors",
+							"SourceSize": 100
+						},
+						{
+							"class": "Column",
+							"Name": "Status",
+							"SourceName": "Status",
+							"SourceID": 4,
+							"DataType": "WideString",
+							"Size": 15,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Status",
+							"SourceSize": 15
+						},
+						{
+							"class": "Column",
+							"Name": "ReleseDate",
+							"SourceName": "ReleseDate",
+							"SourceID": 5,
+							"DataType": "Date",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "ReleseDate"
+						},
+						{
+							"class": "Column",
+							"Name": "Pages",
+							"SourceName": "Pages",
+							"SourceID": 6,
+							"DataType": "Int32",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Pages"
+						},
+						{
+							"class": "Column",
+							"Name": "Price",
+							"SourceName": "Price",
+							"SourceID": 7,
+							"DataType": "Currency",
+							"Precision": 19,
+							"Scale": 4,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Price",
+							"SourcePrecision": 19,
+							"SourceScale": 4
+						},
+						{
+							"class": "Column",
+							"Name": "Currency",
+							"SourceName": "Currency",
+							"SourceID": 8,
+							"DataType": "WideString",
+							"Size": 10,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Currency",
+							"SourceSize": 10
+						},
+						{
+							"class": "Column",
+							"Name": "Imported",
+							"SourceName": "Imported",
+							"SourceID": 9,
+							"DataType": "Date",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Imported"
+						},
+						{
+							"class": "Column",
+							"Name": "Description",
+							"SourceName": "Description",
+							"SourceID": 10,
+							"DataType": "WideString",
+							"Size": 2000,
+							"Searchable": true,
+							"AllowNull": true,
+							"BlobData": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Description",
+							"SourceSize": 2000
+						}
+					],
+					"ConstraintList": [],
+					"ViewList": [],
+					"RowList": [
+						{
+							"RowID": 0,
+							"Original": {
+								"ISBN": "978-0201633610",
+								"Title": "Design Patterns: Elements of Reusable Object-Oriented Software",
+								"Authors": "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides",
+								"Status": "on-shelf",
+								"ReleseDate": "19941101",
+								"Pages": 395,
+								"Price": 54.9,
+								"Currency": "USD",
+								"Imported": "20170630",
+								"Description": "Modern classic in the literature of object-oriented development. Offering timeless and elegant solutions to common problems in software design. It describes 23 patterns for object creation, composing them, and coordinating control flow between them."
+							}
+						},
+						{
+							"RowID": 1,
+							"Original": {
+								"ISBN": "978-0201485677",
+								"Title": "Refactoring: Improving the Design of Existing Code",
+								"Authors": "Martin Fowler, Kent Beck, John Brant, William Opdyke, Don Roberts",
+								"Status": "on-shelf",
+								"ReleseDate": "19990701",
+								"Pages": 464,
+								"Price": 52.98,
+								"Currency": "USD",
+								"Imported": "20170709",
+								"Description": "Book shows how refactoring can make object-oriented code simpler and easier to maintain. Provides a catalog of tips for improving code."
+							}
+						},
+						{
+							"RowID": 2,
+							"Original": {
+								"ISBN": "978-0131177055",
+								"Title": "Working Effectively with Legacy Code",
+								"Authors": "Michael Feathers",
+								"Status": "on-shelf",
+								"ReleseDate": "20041001",
+								"Pages": 464,
+								"Price": 52.69,
+								"Currency": "USD",
+								"Imported": "20170807",
+								"Description": "This book describes a set of disciplines, concepts, and attitudes that you will carry with you for the rest of your career and that will help you to turn systems that gradually degrade into systems that gradually improve."
+							}
+						},
+						{
+							"RowID": 3,
+							"Original": {
+								"ISBN": "978-0321127426",
+								"Title": "Patterns of Enterprise Application Architecture",
+								"Authors": "Martin Fowler",
+								"Status": "avaliable",
+								"ReleseDate": "20021101",
+								"Pages": 560,
+								"Price": 55.99,
+								"Currency": "USD",
+								"Imported": "20170820",
+								"Description": "This book is written in direct response to the stiff challenges that face enterprise application developers. Author distills over forty recurring solutions into patterns. Indispensable handbook of solutions that are applicable to any enterprise application platform."
+							}
+						},
+						{
+							"RowID": 4,
+							"Original": {
+								"ISBN": "978-1849689121",
+								"Title": "Applied Architecture Patterns on the Microsoft Platform (Second Edition)",
+								"Authors": "Andre Dovgal, Dmitri Olechko, Gregor Noriskin",
+								"Status": "avaliable",
+								"ReleseDate": "20140701",
+								"Pages": 456,
+								"Price": 23.24,
+								"Currency": "EUR",
+								"Imported": "20170918",
+								"Description": "Work with various Microsoft technologies using Applied Architecture Patterns"
+							}
+						},
+						{
+							"RowID": 5,
+							"Original": {
+								"ISBN": "978-0735619678",
+								"Title": "Code Complete: A Practical Handbook of Software Construction",
+								"Authors": "Steve McConnell",
+								"Status": "avaliable",
+								"ReleseDate": "20040601",
+								"Pages": 960,
+								"Price": 40.97,
+								"Currency": "USD",
+								"Imported": "20170918",
+								"Description": "Author synthesizes the most effective techniques and must-know principles into clear, pragmatic book which will inform and stimulate your thinking and help you build the highest quality software"
+							}
+						},
+						{
+							"RowID": 6,
+							"Original": {
+								"ISBN": "978-0132350884",
+								"Title": "Clean Code: A Handbook of Agile Software Craftsmanship",
+								"Authors": "Robert C. Martin",
+								"Status": "on-shelf",
+								"ReleseDate": "20080801",
+								"Pages": 464,
+								"Price": 47.49,
+								"Currency": "USD",
+								"Imported": "20170919",
+								"Description": "Best agile practices of cleaning code “on the fly” that will instill within you the values of a software craftsman and make you a better programmer—but only if you work at it."
+							}
+						},
+						{
+							"RowID": 7,
+							"Original": {
+								"ISBN": "978-1941266106",
+								"Title": "More Coding in Delphi",
+								"Authors": "Nick Hodges",
+								"Status": "on-shelf",
+								"ReleseDate": "20151201",
+								"Pages": 246,
+								"Price": 25.99,
+								"Currency": "USD",
+								"Imported": "20171001",
+								"Description": "Picks up where previous \"Coding in Delphi\" left of, continuing to illustrate good, sound coding techniques including design patterns and principles"
+							}
+						},
+						{
+							"RowID": 8,
+							"Original": {
+								"ISBN": "978-1941266038",
+								"Title": "Coding in Delphi",
+								"Authors": "Nick Hodges",
+								"Status": "on-shelf",
+								"ReleseDate": "20140401",
+								"Pages": 236,
+								"Price": 24.99,
+								"Currency": "USD",
+								"Imported": "20171005",
+								"Description": "All about writing Delphi code. It's just about how to use the language in the most effective way to write clean, testable, maintainable Delphi code"
+							}
+						},
+						{
+							"RowID": 9,
+							"Original": {
+								"ISBN": "978-1785287428",
+								"Title": "Delphi Cookbook - Second Edition",
+								"Authors": "Daniele Teti",
+								"Status": "avaliable",
+								"ReleseDate": "20160601",
+								"Pages": 470,
+								"Price": 30.13,
+								"Currency": "EUR",
+								"Imported": "20171018",
+								"Description": "Over 60 hands-on recipes to help you master the power of Delphi for cross-platform and mobile development on multiple platforms"
+							}
+						},
+						{
+							"RowID": 10,
+							"Original": {
+								"ISBN": "978-1786466150",
+								"Title": ".NET Design Patterns",
+								"Authors": "Praseed Pai, Shine Xavier",
+								"Status": "avaliable",
+								"ReleseDate": "20170101",
+								"Pages": 314,
+								"Price": 26.69,
+								"Currency": "EUR",
+								"Imported": "20171027",
+								"Description": "Explore the world of .NET design patterns and bring the benefits that the right patterns can offer to your toolkit today"
+							}
+						},
+						{
+							"RowID": 11,
+							"Original": {
+								"ISBN": "978-1786460165",
+								"Title": "Expert Delphi",
+								"Authors": "Paweł Głowacki",
+								"Status": "avaliable",
+								"ReleseDate": "20170601",
+								"Pages": 506,
+								"Price": 32.71,
+								"Currency": "EUR",
+								"Imported": "20171212",
+								"Description": "Become a developer superhero and build stunning cross-platform apps with Delphi"
+							}
+						},
+						{
+							"RowID": 12,
+							"Original": {
+								"ISBN": "978-1546391272",
+								"Title": "Delphi in Depth: FireDAC",
+								"Authors": "Cary Jensen Ph.D",
+								"Status": "avaliable",
+								"ReleseDate": "20170501",
+								"Pages": 556,
+								"Price": 52.43,
+								"Currency": "EUR",
+								"Imported": "20171221",
+								"Description": "Learn how to connect to a wide variety of databases, optimize your connection configurations, the power of persisted datasets, create flexible queries using macros and FireDAC scalar functions, achieve blazing performance with Array DML, Master the art of cached updates"
+							}
+						},
+						{
+							"RowID": 13,
+							"Original": {
+								"ISBN": "978-1941266229",
+								"Title": "Dependency Injection In Delphi",
+								"Authors": "Nick Hodges",
+								"Status": "avaliable",
+								"ReleseDate": "20170201",
+								"Pages": 132,
+								"Price": 18.18,
+								"Currency": "USD",
+								"Imported": "20171223",
+								"Description": "Covers Dependency Injection, you'll learn about Constructor Injection, Property Injection, and Method Injection and about the right and wrong way to use it"
+							}
+						},
+						{
+							"RowID": 14,
+							"Original": {
+								"ISBN": "978-1788625456",
+								"Title": "Delphi High Performance",
+								"Authors": "Primož Gabrijelčič",
+								"Status": "avaliable",
+								"ReleseDate": "20180201",
+								"Pages": 336,
+								"Price": 25.83,
+								"Currency": "EUR",
+								"Imported": "20171230",
+								"Description": "Build fast, scalable, and high performing applications with Delphi"
+							}
+						},
+						{
+							"RowID": 15,
+							"Original": {
+								"ISBN": "978-1788621304",
+								"Title": "Delphi Cookbook - Third Edition",
+								"Authors": "Daniele Spinetti, Daniele Teti",
+								"Status": "avaliable",
+								"ReleseDate": "20180701",
+								"Pages": 668,
+								"Price": 30.13,
+								"Currency": "EUR",
+								"Imported": "20180324",
+								"Description": "Quickly learn and employ practical recipes for developing real-world, cross-platform applications using Delphi"
+							}
+						}
+					]
+				}
+			],
+			"RelationList": [],
+			"UpdatesJournal": {
+				"SavePoint": 48,
+				"Changes": []
+			}
+		}
+	}
+}

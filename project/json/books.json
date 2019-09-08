@@ -1,0 +1,46 @@
+﻿[
+	{
+		"status": "cooming-soon",
+		"title": "Hands-On Design Patterns with C# and .NET Core",
+		"isbn": "978-1788625258",
+		"author": "Gaurav Aroraa, Jeffrey Chilberto",
+		"date": "Jan 2019",
+		"pages": 437,
+		"price": 25.83,
+		"currency": "EUR",
+		"description": "Build effective applications in C# and .NET Core by using proven programming practices and design techniques."
+	},
+	{
+		"status": "cooming-soon",
+		"title": "Delphi GUI Programming with FireMonkey",
+		"isbn": "978-1788624176",
+		"author": "Andrea Magni",
+		"date": "Jan 2019",
+		"pages": 437,
+		"price": 29.27,
+		"currency": "EUR",
+		"description": "Master the techniques to build interesting cross platform GUI applications with FMX"
+	},
+	{
+		"status": "cooming-soon",
+		"title": "Hands-On Design Patterns with Delphi",
+		"isbn": "978-1789343243",
+		"author": "Primož Gabrijelčič",
+		"date": "Mar 2019",
+		"pages": 512,
+		"price": 26.69,
+		"currency": "EUR",
+		"description": "Build scalable projects via exploring design patterns in Delphi"
+	},
+	{
+		"status": "cooming-soon",
+		"title": "Hands-On Domain Driven Design with .NET",
+		"isbn": "978-1788834094",
+		"author": "Alexey Zimarev",
+		"date": "Jan 2019",
+		"pages": 584,
+		"price": 37.99,
+		"currency": "EUR",
+		"description": "Learn to solve complex business problems by understanding users better, finding the right problem to solve, and building lean event-driven systems to give your customers what they really want."
+	}
+]

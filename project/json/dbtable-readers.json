@@ -1,0 +1,385 @@
+﻿{
+	"FDBS": {
+		"Version": 15,
+		"Manager": {
+			"UpdatesRegistry": true,
+			"TableList": [
+				{
+					"class": "Table",
+					"Name": "mtabReaders",
+					"SourceName": "Table",
+					"TabID": 0,
+					"EnforceConstraints": false,
+					"MinimumCapacity": 50,
+					"CheckNotNull": false,
+					"ColumnList": [
+						{
+							"class": "Column",
+							"Name": "ReaderId",
+							"SourceName": "ReaderId",
+							"SourceID": 1,
+							"DataType": "Int32",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "ReaderId"
+						},
+						{
+							"class": "Column",
+							"Name": "Email",
+							"SourceName": "Email",
+							"SourceID": 2,
+							"DataType": "WideString",
+							"Size": 50,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Email",
+							"SourceSize": 50
+						},
+						{
+							"class": "Column",
+							"Name": "FirstName",
+							"SourceName": "FirstName",
+							"SourceID": 3,
+							"DataType": "WideString",
+							"Size": 100,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "FirstName",
+							"SourceSize": 100
+						},
+						{
+							"class": "Column",
+							"Name": "LastName",
+							"SourceName": "LastName",
+							"SourceID": 4,
+							"DataType": "WideString",
+							"Size": 100,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "LastName",
+							"SourceSize": 100
+						},
+						{
+							"class": "Column",
+							"Name": "Company",
+							"SourceName": "Company",
+							"SourceID": 5,
+							"DataType": "WideString",
+							"Size": 100,
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Company",
+							"SourceSize": 100
+						},
+						{
+							"class": "Column",
+							"Name": "BooksRead",
+							"SourceName": "BooksRead",
+							"SourceID": 6,
+							"DataType": "Int32",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "BooksRead"
+						},
+						{
+							"class": "Column",
+							"Name": "LastReport",
+							"SourceName": "LastReport",
+							"SourceID": 7,
+							"DataType": "Date",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "LastReport"
+						},
+						{
+							"class": "Column",
+							"Name": "Created",
+							"SourceName": "Created",
+							"SourceID": 8,
+							"DataType": "Date",
+							"Searchable": true,
+							"AllowNull": true,
+							"Base": true,
+							"OAllowNull": true,
+							"OInUpdate": true,
+							"OInWhere": true,
+							"OriginColName": "Created"
+						}
+					],
+					"ConstraintList": [],
+					"ViewList": [],
+					"RowList": [
+						{
+							"RowID": 31,
+							"Original": {
+								"ReaderId": 1,
+								"Email": "nroutledge2j@europa.eu",
+								"FirstName": "Routledge",
+								"LastName": "Ned",
+								"Company": "Stamm, Cassin and Bins",
+								"BooksRead": 1,
+								"LastReport": "20180410",
+								"Created": "20170915"
+							}
+						},
+						{
+							"RowID": 2,
+							"Original": {
+								"ReaderId": 2,
+								"Email": "mmillan12@prlog.org",
+								"FirstName": "Millan",
+								"LastName": "Marcus",
+								"BooksRead": 2,
+								"LastReport": "20180603",
+								"Created": "20171027"
+							}
+						},
+						{
+							"RowID": 3,
+							"Original": {
+								"ReaderId": 3,
+								"Email": "staszek.sobieraj@empik.com",
+								"FirstName": "Sobieraj",
+								"LastName": "Stanisław",
+								"Company": "Empik sp. z o.o.",
+								"BooksRead": 1,
+								"LastReport": "20180610",
+								"Created": "20171123"
+							}
+						},
+						{
+							"RowID": 4,
+							"Original": {
+								"ReaderId": 4,
+								"Email": "tcogdell2j@patch.com",
+								"FirstName": "Cogdell",
+								"LastName": "Torbjörn",
+								"BooksRead": 2,
+								"LastReport": "20180721",
+								"Created": "20171203"
+							}
+						},
+						{
+							"RowID": 5,
+							"Original": {
+								"ReaderId": 5,
+								"Email": "awilletts1v@abbott.com",
+								"FirstName": "Willetts",
+								"LastName": "Táng",
+								"Company": "Abbott, Haley and Stiedemann",
+								"BooksRead": 2,
+								"LastReport": "20180621",
+								"Created": "20180102"
+							}
+						},
+						{
+							"RowID": 6,
+							"Original": {
+								"ReaderId": 6,
+								"Email": "amaccaghan27@cornell.edu",
+								"FirstName": "MacCaghan",
+								"LastName": "Ambrosio",
+								"BooksRead": 2,
+								"LastReport": "20181011",
+								"Created": "20180105"
+							}
+						},
+						{
+							"RowID": 7,
+							"Original": {
+								"ReaderId": 7,
+								"Email": "bburberye7@imgur.com",
+								"FirstName": "Burberye",
+								"LastName": "Naëlle",
+								"Company": "Quitzon, Legros and Swift",
+								"BooksRead": 1,
+								"LastReport": "20180508",
+								"Created": "20180124"
+							}
+						},
+						{
+							"RowID": 8,
+							"Original": {
+								"ReaderId": 8,
+								"Email": "sbirchenough5@bravesites.com",
+								"FirstName": "Birchenough",
+								"LastName": "Gaïa",
+								"BooksRead": 2,
+								"LastReport": "20180927",
+								"Created": "20180130"
+							}
+						},
+						{
+							"RowID": 9,
+							"Original": {
+								"ReaderId": 9,
+								"Email": "clesieur3@meetup.com",
+								"FirstName": "Le Sieur",
+								"LastName": "Garçon",
+								"BooksRead": 1,
+								"LastReport": "20180525",
+								"Created": "20180302"
+							}
+						},
+						{
+							"RowID": 10,
+							"Original": {
+								"ReaderId": 10,
+								"Email": "yhegge6@w3.org",
+								"FirstName": "Hegge",
+								"LastName": "Eugénie",
+								"BooksRead": 1,
+								"LastReport": "20180911",
+								"Created": "20180304"
+							}
+						},
+						{
+							"RowID": 11,
+							"Original": {
+								"ReaderId": 11,
+								"Email": "wdansie1l@bizjournals.com",
+								"FirstName": "Dansie",
+								"LastName": "Cléopatre",
+								"BooksRead": 5,
+								"LastReport": "20180907",
+								"Created": "20180310"
+							}
+						},
+						{
+							"RowID": 12,
+							"Original": {
+								"ReaderId": 13,
+								"Email": "kdemko5@carter-baumbach.com",
+								"FirstName": "Demko",
+								"LastName": "Karlik",
+								"Company": "Carter-Baumbach",
+								"BooksRead": 1,
+								"LastReport": "20181009",
+								"Created": "20180318"
+							}
+						},
+						{
+							"RowID": 13,
+							"Original": {
+								"ReaderId": 16,
+								"Email": "awallicker4@about.me",
+								"FirstName": "Wallicker",
+								"LastName": "Ruì",
+								"BooksRead": 1,
+								"LastReport": "20180825",
+								"Created": "20180408"
+							}
+						},
+						{
+							"RowID": 14,
+							"Original": {
+								"ReaderId": 17,
+								"Email": "tdampery@lowe.com",
+								"FirstName": "Damper",
+								"LastName": "Tori",
+								"BooksRead": 1,
+								"LastReport": "20180903",
+								"Created": "20180504"
+							}
+						},
+						{
+							"RowID": 15,
+							"Original": {
+								"ReaderId": 18,
+								"Email": "asandeman1z@trellian.com",
+								"FirstName": "Sandeman",
+								"LastName": "Mårten",
+								"BooksRead": 1,
+								"LastReport": "20180722",
+								"Created": "20180504"
+							}
+						},
+						{
+							"RowID": 16,
+							"Original": {
+								"ReaderId": 19,
+								"Email": "gpesako@koepp.com",
+								"FirstName": "Pesak",
+								"LastName": "Gussi",
+								"Company": "Koepp LLC",
+								"BooksRead": 1,
+								"LastReport": "20180827",
+								"Created": "20180514"
+							}
+						},
+						{
+							"RowID": 17,
+							"Original": {
+								"ReaderId": 21,
+								"Email": "boldknow1g@gizmodo.com",
+								"FirstName": "Oldknow",
+								"LastName": "Bondon",
+								"BooksRead": 1,
+								"LastReport": "20180826",
+								"Created": "20180607"
+							}
+						},
+						{
+							"RowID": 18,
+							"Original": {
+								"ReaderId": 22,
+								"Email": "gsorton1f@un.org",
+								"FirstName": "Sorton",
+								"LastName": "Gib",
+								"BooksRead": 1,
+								"LastReport": "20180805",
+								"Created": "20180610"
+							}
+						},
+						{
+							"RowID": 19,
+							"Original": {
+								"ReaderId": 23,
+								"Email": "emckellaro@jenkinsparisian.com",
+								"FirstName": "McKellar",
+								"LastName": "Göran",
+								"Company": "Jenkins-Parisian",
+								"BooksRead": 1,
+								"LastReport": "20180823",
+								"Created": "20180610"
+							}
+						}
+					]
+				}
+			],
+			"RelationList": [],
+			"UpdatesJournal": {
+				"SavePoint": 128,
+				"Changes": []
+			}
+		}
+	}
+}

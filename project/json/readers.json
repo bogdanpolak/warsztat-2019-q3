@@ -1,0 +1,76 @@
+﻿[
+	{
+		"firstname": "Sobieraj",
+		"lastname": "Stanisław",
+		"email": "staszek.sobieraj@empik.com",
+		"company": "",
+                "book-isbn": "978-1788621304",
+                "book-title": "Delphi Cookbook - Third Edition",
+                "rating": 10,
+                "oppinion": "Great! There are lots of an easy to implement recepies. Very useful for the future. I recommend it to an every Delphi developer.",
+                "created": "2018-07-27T18:30:49Z"
+	},
+	{
+		"firstname": "Gervasio",
+		"lastname": "Brancato",
+		"email": "rervasio3419@email.it",
+		"company": "Komerci",
+		"book-isbn": "978-1941266038",
+                "book-title": "Coding in Delphi",
+                "rating": 9,
+                "oppinion": "This must-read book highlights the importance writung of clean and resposible code in Delphi.",
+                "created": "2018-08-15T20:12:31Z"
+	},
+	{
+		"firstname": "Rolando",
+		"lastname": "D'Ottavio",
+		"email": "r.ottavio@alice.it",
+		"company": "Motife Srl",
+		"book-isbn": "978-1786466150",
+                "book-title": ".NET Design Patterns",
+                "rating": 8,
+                "oppinion": "This is the key to making things done and getting the results.",
+                "created": "2018-08-23T10:02:17Z"
+	},
+	{
+		"firstname": "Adolfo",
+		"lastname": "Alba",
+		"email": "aa9876543@gmail.com",
+		"book-isbn": "978-1786460165",
+                "book-title": "Expert Delphi",
+                "rating": 7,
+                "oppinion": "The tools and insights author shares in his book have been instrumental in elevating my development knowledge.",
+                "created": "2018-09-02T19:55:43Z"
+	},
+	{
+		"firstname": "Pancrazio",
+		"lastname": "Muto",
+		"email": "SuperPancrazio70@email.it",
+		"book-isbn": "978-1546391272",
+                "book-title": "Delphi in Depth: FireDAC",
+                "rating": 8,
+                "oppinion": "It’s required reading for any developer looking to play with FireDAC",
+                "created": "2018-09-14T22:32:31Z"
+	},
+        {
+                "firstname": "Routledge",
+                "lastname": "Ned",
+                "email": "nroutledge2j@europa.eu",
+                "company": "Sawayn and Sons",
+		"book-isbn": "978-1941266229",
+                "book-title": "Dependency Injection In Delphi",
+                "rating": 9,
+                "oppinion": "Nick's perspective on developing modern Delphi code and his methodologies have really made a difference in our team.",
+                "created": "2018-09-20T15:39:49Z"
+        },
+        {
+                "firstname": "Owbridge",
+                "lastname": "Ian",
+                "email": "iowbridge1v@joomla.org",
+                "book-isbn": "978-1788621304",
+                "book-title": "Delphi Cookbook - Third Edition",
+                "rating": 10,
+                "oppinion": "Daniele’s smart and thoughtful approach showing small and extremely useful recipes was the best reading for me.",
+                "created": "2018-09-27T23:02:21Z"
+        }
+]
