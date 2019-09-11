@@ -29,7 +29,12 @@ uses
   Config.Application in 'Config.Application.pas',
   Helper.TDBGrid in 'Helper.TDBGrid.pas',
   Helper.TJSONObject in 'Helper.TJSONObject.pas',
-  Helper.TApplication in 'Helper.TApplication.pas';
+  Helper.TApplication in 'Helper.TApplication.pas',
+  Data.DataProxy.Factory in 'proxy\Data.DataProxy.Factory.pas',
+  Data.DataProxy in 'proxy\Data.DataProxy.pas',
+  Proxy.Books in 'proxy\Proxy.Books.pas',
+  Proxy.Readers in 'proxy\Proxy.Readers.pas',
+  Proxy.Reports in 'proxy\Proxy.Reports.pas';
 
 {$R *.res}
 
