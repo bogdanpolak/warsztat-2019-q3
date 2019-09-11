@@ -31,7 +31,8 @@ uses
   Data.DataProxy in 'proxy\Data.DataProxy.pas',
   Proxy.Books in 'proxy\Proxy.Books.pas',
   Proxy.Readers in 'proxy\Proxy.Readers.pas',
-  Proxy.Reports in 'proxy\Proxy.Reports.pas';
+  Proxy.Reports in 'proxy\Proxy.Reports.pas',
+  Model.Books in 'Model.Books.pas';
 
 {$R *.res}
 
