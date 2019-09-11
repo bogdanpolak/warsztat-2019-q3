@@ -448,7 +448,6 @@ object Form1: TForm1
       Align = alTop
       Caption = 'btnImport'
       TabOrder = 2
-      ExplicitLeft = 5
     end
   end
   object tmrAppReady: TTimer
