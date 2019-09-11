@@ -7,6 +7,7 @@ uses
   System.Classes,
   System.JSON,
   System.Variants,
+  System.Generics.Collections,
   Vcl.Pattern.Command,
   Vcl.ExtCtrls,
   // ---
@@ -127,7 +128,6 @@ var
   rating: Integer;
   oppinion: string;
   ss: array of string;
-  v: string;
   dtReported: TDateTime;
   readerId: Variant;
   b: TBook;
