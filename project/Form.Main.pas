@@ -228,21 +228,19 @@ begin
 end;
 
 procedure TForm1.BuildActions();
-var
-  Books: TBooksProxy;
-  Readers: TReaderProxy;
-  Reports: TReportProxy;
 begin
-  Books := TDataProxyFactory.CreateProxy<TBooksProxy>(btnImport,
-    DataModMain.mtabBooks);
-  Readers := TDataProxyFactory.CreateProxy<TReaderProxy>(btnImport,
-    DataModMain.mtabReaders);
-  Reports := TDataProxyFactory.CreateProxy<TReportProxy>(btnImport,
-    DataModMain.mtabReports);
-
   btnImport.Action := TCommandVclFactory.CreateCommandAction<TImportCommand>
-    (Self, 'Import Reports', [FBooksConfig, pnMain, ChromeTabs1,
-    Books, Readers, Reports]);
+    (Self, 'Import Reports', [
+    (* *) FBooksConfig
+    (* *) , pnMain
+    (* *) , ChromeTabs1
+    (* *) , TDataProxyFactory.CreateProxy<TBooksProxy>(btnImport,
+    (* *)     DataModMain.mtabBooks)
+    (* *) , TDataProxyFactory.CreateProxy<TReaderProxy>(btnImport,
+    (* *)     DataModMain.mtabReaders)
+    (* *) , TDataProxyFactory.CreateProxy<TReportProxy>(btnImport,
+    (* *)     DataModMain.mtabReports)
+    ]);
 end;
 
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
