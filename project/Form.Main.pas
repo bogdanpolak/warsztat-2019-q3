@@ -15,7 +15,12 @@ uses
   Frame.Welcome,
   {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
   // Dependency is requred by attribute TBooksListBoxConfigurator
-  ExtGUI.ListBox.Books;
+  ExtGUI.ListBox.Books,
+  Command.Import,
+  Proxy.Books,
+  Proxy.Readers,
+  Proxy.Reports,
+  Model.Books;
 
 type
   TForm1 = class(TForm)
@@ -38,12 +43,17 @@ type
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
     procedure tmrAppReadyTimer(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
     FBooksConfig: TBooksListBoxConfigurator;
     FApplicationInDeveloperMode: Boolean;
+    Books: TBookCollection2;
+    BookProxy: TBooksProxy;
+    cmdImport: TImportCommand;
     procedure AutoSizeBooksGroupBoxes();
     procedure BuildDBGridForBooks_InternalQA(frm: TFrameWelcome);
-    procedure BuildActions;
+    procedure BuildActionsFromCommands;
+    class function ConstructOldBook(b2: TBook2): TBook; static;
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -65,11 +75,10 @@ uses
   ClientAPI.Books,
   Consts.SQL,
   Config.Application,
-  Command.Import, Helper.TDBGrid, Helper.TJSONObject, Vcl.Pattern.Command,
-  Data.DataProxy.Factory,
-  Proxy.Books,
-  Proxy.Readers,
-  Proxy.Reports;
+  Helper.TDBGrid,
+  Helper.TJSONObject,
+  Vcl.Pattern.Command,
+  Data.DataProxy.Factory;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -154,6 +163,11 @@ begin
   end;
 end;
 
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  Books.Free;
+end;
+
 procedure TForm1.FormCreate(Sender: TObject);
 var
   Extention: string;
@@ -227,20 +241,32 @@ begin
   (Sender as TSplitter).Tag := 1;
 end;
 
-procedure TForm1.BuildActions();
+class function TForm1.ConstructOldBook(b2: TBook2): TBook;
 begin
-  btnImport.Action := TCommandVclFactory.CreateCommandAction<TImportCommand>
-    (Self, 'Import Reports', [
-    (* *) FBooksConfig
-    (* *) , pnMain
-    (* *) , ChromeTabs1
-    (* *) , TDataProxyFactory.CreateProxy<TBooksProxy>(btnImport,
-    (* *)     DataModMain.mtabBooks)
-    (* *) , TDataProxyFactory.CreateProxy<TReaderProxy>(btnImport,
-    (* *)     DataModMain.mtabReaders)
-    (* *) , TDataProxyFactory.CreateProxy<TReportProxy>(btnImport,
-    (* *)     DataModMain.mtabReports)
-    ]);
+  Result := TBook.Create();
+  with Result do
+  begin
+    Result.status := b2.status;
+    Result.title := b2.title;
+    Result.isbn := b2.isbn;
+    Result.author := b2.author;
+    Result.releseDate := b2.releseDate;
+    Result.pages := b2.pages;
+    Result.price := b2.price;
+    Result.currency := b2.currency;
+    Result.imported := b2.imported;
+    Result.description := b2.description;
+  end;
+end;
+
+procedure TForm1.BuildActionsFromCommands();
+begin
+  btnImport.Action := TCommandAction.Create(btnImport);
+  with btnImport.Action as TCommandAction do
+  begin
+    Caption := 'Import Reports';
+    Command := cmdImport;
+  end;
 end;
 
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
@@ -333,13 +359,44 @@ begin
   FBooksConfig := TBooksListBoxConfigurator.Create(Self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  BookProxy := TDataProxyFactory.CreateProxy<TBooksProxy>(btnImport,
+    DataModMain.mtabBooks);
+  Books := TBookCollection2.Create();
+  Books.Load(BookProxy);
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  cmdImport := TImportCommand.Create(Self);
+  with cmdImport do
+  begin
+    MainFormPanel := pnMain;
+    ChromeTabs1 := Self.ChromeTabs1;
+    // --
+    Books := Self.Books;
+    BookProxy := Self.BookProxy;
+    ReaderProxy := TDataProxyFactory.CreateProxy<TReaderProxy>(btnImport,
+      DataModMain.mtabReaders);
+    ReportProxy := TDataProxyFactory.CreateProxy<TReportProxy>(btnImport,
+      DataModMain.mtabReports);
+    OnInsertBook := procedure(b2: TBook2)
+      begin
+        FBooksConfig.InsertNewBook(ConstructOldBook(b2));
+        if Books.FindByISBN(b2.isbn) = nil then
+          Books.Add(b2)
+        else
+          b2.Free;
+      end;;
+  end;
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  BuildActionsFromCommands;
+  // ----------------------------------------------------------
   if FApplicationInDeveloperMode and InInternalQualityMode then
   begin
     BuildDBGridForBooks_InternalQA(frm);
   end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
-  BuildActions;
 end;
 
 end.

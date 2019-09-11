@@ -9,25 +9,39 @@ uses
   System.Variants,
   System.Generics.Collections,
   Vcl.Pattern.Command,
-  Vcl.ExtCtrls,
   // ---
-  ExtGUI.ListBox.Books,
+  // TODO: Remove this dependencies (before adding unit tests)
+  ClientAPI.Books,
+  ClientAPI.Readers,
+  Config.Application,
+  Helper.TApplication,
+  // ---
+  // TODO: Remove this dependencies (after add unit tests)
+  Vcl.DBGrids,
+  Vcl.Controls,
+  Vcl.Forms,
+  Helper.TDBGrid,
+  Vcl.ExtCtrls,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
+  Frame.Import,
+  // ---
   Proxy.Books,
   Proxy.Readers,
-  Proxy.Reports;
+  Proxy.Reports,
+  Model.Books;
 
 {$M+}
 
 type
   TImportCommand = class(TCommand)
   private
-    FMegaBooks: TBooksListBoxConfigurator;
     FpnMain: TPanel;
     FChromeTabs1: TChromeTabs;
-    FBooks: TBooksProxy;
-    FReaders: TReaderProxy;
-    FReports: TReportProxy;
+    FBookProxy: TBooksProxy;
+    FReaderProxy: TReaderProxy;
+    FReportProxy: TReportProxy;
+    FOnInsertBook: TProc<TBook2>;
+    FBooks: TBookCollection2;
   protected
     procedure Guard; override;
   public
@@ -36,14 +50,15 @@ type
       var dtReported: TDateTime); static;
     // ---
     procedure Execute; override;
-  published
-    property MegaComponentWithBooks: TBooksListBoxConfigurator read FMegaBooks
-      write FMegaBooks;
-    property pnMain: TPanel read FpnMain write FpnMain;
+    // ---
+    property MainFormPanel: TPanel read FpnMain write FpnMain;
     property ChromeTabs1: TChromeTabs read FChromeTabs1 write FChromeTabs1;
-    property Books: TBooksProxy read FBooks write FBooks;
-    property Readers: TReaderProxy read FReaders write FReaders;
-    property Reports: TReportProxy read FReports write FReports;
+  published
+    property BookProxy: TBooksProxy read FBookProxy write FBookProxy;
+    property ReaderProxy: TReaderProxy read FReaderProxy write FReaderProxy;
+    property ReportProxy: TReportProxy read FReportProxy write FReportProxy;
+    property Books: TBookCollection2 read FBooks write FBooks;
+    property OnInsertBook: TProc<TBook2> read FOnInsertBook write FOnInsertBook;
   end;
 
 implementation
@@ -51,25 +66,15 @@ implementation
 uses
   System.RegularExpressions,
   Data.DB,
-  Vcl.DBGrids,
-  Vcl.Controls,
-  Vcl.Forms,
-  Helper.TDBGrid,
-  Helper.TJSONObject,
-  Frame.Import,
-  ClientAPI.Books,
-  ClientAPI.Readers,
-  Config.Application, Helper.TApplication;
+  Helper.TJSONObject;
 
 procedure TImportCommand.Guard;
 begin
   inherited;
-  Assert (MegaComponentWithBooks<>nil);
-  Assert (pnMain<>nil);
-  Assert (ChromeTabs1<>nil);
+  Assert (BookProxy<>nil);
+  Assert (ReaderProxy<>nil);
+  Assert (ReportProxy<>nil);
   Assert (Books<>nil);
-  Assert (Readers<>nil); 
-  Assert (Reports<>nil);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -139,11 +144,10 @@ var
   ss: array of string;
   dtReported: TDateTime;
   readerId: Variant;
-  b: TBook;
+  book: TBook2;
   jsBooks: TJSONArray;
   jsBook: TJSONObject;
-  TextBookReleseDate: string;
-  b2: TBook;
+  book2: TBook2;
 begin
   inherited;
   // ----------------------------------------------------------
@@ -157,29 +161,30 @@ begin
     for i := 0 to jsBooks.Count - 1 do
     begin
       jsBook := jsBooks.Items[i] as TJSONObject;
-      b := TBook.Create;
-      b.status := jsBook.Values['status'].Value;
-      b.title := jsBook.Values['title'].Value;
-      b.isbn := jsBook.Values['isbn'].Value;
-      b.author := jsBook.Values['author'].Value;
-      TextBookReleseDate := jsBook.Values['date'].Value;
-      b.releseDate := BooksToDateTime(TextBookReleseDate);
-      b.pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
-      b.price := StrToCurr(jsBook.Values['price'].Value);
-      b.currency := jsBook.Values['currency'].Value;
-      b.description := jsBook.Values['description'].Value;
-      b.imported := Now();
-      b2 := MegaComponentWithBooks.GetBookList(blkAll).FindByISBN(b.isbn);
-      if not Assigned(b2) then
+      book := TBook2.Create;
+      with book do begin
+        status := jsBook.Values['status'].Value;
+        title := jsBook.Values['title'].Value;
+        isbn := jsBook.Values['isbn'].Value;
+        author := jsBook.Values['author'].Value;
+        releseDate := BooksToDateTime(jsBook.Values['date'].Value);
+        pages := (jsBook.Values['pages'] as TJSONNumber).AsInt;
+        price := StrToCurr(jsBook.Values['price'].Value);
+        currency := jsBook.Values['currency'].Value;
+        description := jsBook.Values['description'].Value;
+        imported := Now();
+      end;
+      if not BookProxy.FindByISBN(book.isbn) then
       begin
-        MegaComponentWithBooks.InsertNewBook(b);
+        if Assigned(OnInsertBook) then
+          OnInsertBook(book);
         // ----------------------------------------------------------------
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        Books.InsertRecord([b.isbn, b.title, b.author, b.status,
-          b.releseDate, b.pages, b.price, b.currency, b.imported,
-          b.description]);
+        BookProxy.AppendRecord([book.isbn, book.title, book.author, book.status,
+          book.releseDate, book.pages, book.price, book.currency, book.imported,
+          book.description]);
       end;
     end;
   finally
@@ -195,13 +200,16 @@ begin
   //
   { TODO 2: [B] Extract method. Read comments and use meaningful }
   // Look for ChromeTabs1.Tabs.Add for code duplication
-  frm := TFrameImport.Create(pnMain);
-  frm.Parent := pnMain;
-  frm.Visible := True;
-  frm.Align := Vcl.Controls.alClient;
-  tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Readers';
-  tab.Data := frm;
+  if Assigned(MainFormPanel) and Assigned(ChromeTabs1) then
+  begin
+    frm := TFrameImport.Create(MainFormPanel);
+    frm.Parent := MainFormPanel;
+    frm.Visible := True;
+    frm.Align := Vcl.Controls.alClient;
+    tab := ChromeTabs1.Tabs.Add;
+    tab.Caption := 'Readers';
+    tab.Data := frm;
+  end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -209,12 +217,15 @@ begin
   //
   { TODO 2: [C] Move code down separate bussines logic from GUI }
   // warning for dataset dependencies, discuss TDBGrid dependencies
-  DBGrid1 := TDBGrid.Create(frm);
-  DBGrid1.AlignWithMargins := True;
-  DBGrid1.Parent := frm;
-  DBGrid1.Align := Vcl.Controls.alClient;
-  DBGrid1.DataSource := Readers.ConstructDataSource(frm);
-  DBGrid1.AutoSizeColumns();
+  if Assigned(frm) then
+  begin
+    DBGrid1 := TDBGrid.Create(frm);
+    DBGrid1.AlignWithMargins := True;
+    DBGrid1.Parent := frm;
+    DBGrid1.Align := Vcl.Controls.alClient;
+    DBGrid1.DataSource := ReaderProxy.ConstructDataSource(frm);
+    DBGrid1.AutoSizeColumns();
+  end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -276,23 +287,22 @@ begin
       // Locate book by ISBN
       //
       { TODO 2: [G] Extract method }
-      b := MegaComponentWithBooks.GetBookList(blkAll).FindByISBN(bookISBN);
-      if not Assigned(b) then
+      if not Assigned( Books.FindByISBN(bookISBN) ) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
       // Find the Reader in then database using an email address
-      readerId := Readers.LoacateReaderIdByEmil(email);
+      readerId := ReaderProxy.LoacateReaderIdByEmil(email);
       // ----------------------------------------------------------------
       //
       // Append a new reader into the database if requred:
       if System.Variants.VarIsNull(readerId) then
       begin
-        readerId := Readers.generateNewUniqueID();
+        readerId := ReaderProxy.generateNewUniqueID();
         //
         // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
         // LastReport, ReadersCreated
         //
-        Readers.AppendRecord([readerId, firstName, lastName,
+        ReaderProxy.AppendRecord([readerId, firstName, lastName,
           email, company, 1, dtReported, Now()]);
       end;
       // ----------------------------------------------------------------
@@ -300,7 +310,7 @@ begin
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      Reports.AppendRecord([readerId, bookISBN, rating,
+      ReportProxy.AppendRecord([readerId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
       if Application.InDeveloperMode then
@@ -318,21 +328,24 @@ begin
       **
     }
     // ----------------------------------------------------------------
-    with TSplitter.Create(frm) do
+    if Assigned(frm) then
     begin
-      Align := alBottom;
-      Parent := frm;
-      Height := 5;
+      with TSplitter.Create(frm) do
+      begin
+        Align := alBottom;
+        Parent := frm;
+        Height := 5;
+      end;
+      DBGrid1.Margins.Bottom := 0;
+      DBGrid2 := TDBGrid.Create(frm);
+      DBGrid2.AlignWithMargins := True;
+      DBGrid2.Parent := frm;
+      DBGrid2.Align := alBottom;
+      DBGrid2.Height := frm.Height div 3;
+      DBGrid2.DataSource := ReportProxy.ConstructDataSource(frm);
+      DBGrid2.Margins.Top := 0;
+      DBGrid2.AutoSizeColumns();
     end;
-    DBGrid1.Margins.Bottom := 0;
-    DBGrid2 := TDBGrid.Create(frm);
-    DBGrid2.AlignWithMargins := True;
-    DBGrid2.Parent := frm;
-    DBGrid2.Align := alBottom;
-    DBGrid2.Height := frm.Height div 3;
-    DBGrid2.DataSource := Reports.ConstructDataSource(frm);
-    DBGrid2.Margins.Top := 0;
-    DBGrid2.AutoSizeColumns();
   finally
     jsData.Free;
   end;
