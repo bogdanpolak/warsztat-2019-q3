@@ -26,7 +26,7 @@ type
     procedure AppendRecord(const Values: array of const);
     procedure Cancel; inline;
     procedure Close; inline;
-    function ConstructDataSource: TDataSource;
+    function ConstructDataSource(AOwner: TComponent): TDataSource;
     function ControlsDisabled: Boolean;
     function CreateBlobStream(Field: TField; Mode: TBlobStreamMode): TStream;
     procedure Delete; inline;
@@ -38,7 +38,7 @@ type
     procedure InsertRecord(const Values: array of const);
     function IsEmpty: Boolean; inline;
     procedure Last; inline;
-    function Eof: boolean;
+    function Eof: Boolean;
     function Locate(const KeyFields: string; const KeyValues: Variant;
       Options: TLocateOptions): Boolean;
     function Lookup(const KeyFields: string; const KeyValues: Variant;
@@ -79,9 +79,10 @@ begin
   FDataSet.Close;
 end;
 
-function TGenericDataSetProxy.ConstructDataSource: TDataSource;
+function TGenericDataSetProxy.ConstructDataSource(AOwner: TComponent)
+  : TDataSource;
 begin
-  Result := TDataSource.Create(Self);
+  Result := TDataSource.Create(AOwner);
   Result.DataSet := FDataSet;
 end;
 
@@ -133,7 +134,7 @@ begin
   FDataSet.EnableControls;
 end;
 
-function TGenericDataSetProxy.Eof: boolean;
+function TGenericDataSetProxy.Eof: Boolean;
 begin
   Result := FDataSet.Eof;
 end;

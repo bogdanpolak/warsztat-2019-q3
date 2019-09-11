@@ -65,13 +65,16 @@ uses
   ClientAPI.Books,
   Consts.SQL,
   Config.Application,
-  Command.Import, Helper.TDBGrid, Helper.TJSONObject, Vcl.Pattern.Command;
+  Command.Import, Helper.TDBGrid, Helper.TJSONObject, Vcl.Pattern.Command,
+  Data.DataProxy.Factory,
+  Proxy.Books,
+  Proxy.Readers,
+  Proxy.Reports;
 
 const
   SecureKey = 'delphi-is-the-best';
   // SecurePassword = AES 128 ('masterkey',SecureKey)
   SecurePassword = 'hC52IiCv4zYQY2PKLlSvBaOXc14X41Mc1rcVS6kyr3M=';
-
 
 resourcestring
   SWelcomeScreen = 'Welcome screen';
@@ -225,10 +228,21 @@ begin
 end;
 
 procedure TForm1.BuildActions();
+var
+  Books: TBooksProxy;
+  Readers: TReaderProxy;
+  Reports: TReportProxy;
 begin
-  btnImport.Action := TCommandVclFactory.CreateCommandAction
-    <TImportCommand>(Self, 'Import Reports',
-    [FBooksConfig, DataModMain, pnMain, ChromeTabs1]);
+  Books := TDataProxyFactory.CreateProxy<TBooksProxy>(btnImport,
+    DataModMain.mtabBooks);
+  Readers := TDataProxyFactory.CreateProxy<TReaderProxy>(btnImport,
+    DataModMain.mtabReaders);
+  Reports := TDataProxyFactory.CreateProxy<TReportProxy>(btnImport,
+    DataModMain.mtabReports);
+
+  btnImport.Action := TCommandVclFactory.CreateCommandAction<TImportCommand>
+    (Self, 'Import Reports', [FBooksConfig, pnMain, ChromeTabs1,
+    Books, Readers, Reports]);
 end;
 
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
@@ -318,7 +332,7 @@ begin
   // * Setup drag&drop functionality for two list boxes
   // * Setup OwnerDraw mode
   //
-  FBooksConfig := TBooksListBoxConfigurator.Create(self);
+  FBooksConfig := TBooksListBoxConfigurator.Create(Self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
   if FApplicationInDeveloperMode and InInternalQualityMode then

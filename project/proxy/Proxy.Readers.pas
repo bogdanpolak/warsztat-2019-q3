@@ -25,8 +25,10 @@ type
   protected
     procedure ConnectFields; override;
   public
-    // property DataSet: TDataSet read FDataSet;
     class function CreateMockTable(AOwner: TComponent): TFDMemTable;
+    // ---
+    function generateNewUniqueID: integer;
+    function LoacateReaderIdByEmil(const email: string): Variant;
     // ---
     property ReaderId: TIntegerField read FReaderId;
     property FirstName: TWideStringField read FFirstName;
@@ -397,6 +399,31 @@ begin
   end;
 {$ENDREGION}
   Result := ds;
+end;
+
+// -----------------------------------------------------------
+
+function TReaderProxy.generateNewUniqueID: integer;
+var
+  NewID: integer;
+begin
+  // GenerateUniqueID: GetMax(ReaderId)+1 or 0 in there is no rows
+  NewID := 0;
+  Self.ForEach(
+    procedure
+    begin
+      if ReaderId.Value > NewID then
+        NewID := ReaderId.Value;
+    end);
+  Result := NewID;
+end;
+
+function TReaderProxy.LoacateReaderIdByEmil(const email: string): Variant;
+begin
+  if FDataSet.Locate('email', email, []) then
+    Result := Self.ReaderId.Value
+  else
+    Result := System.Variants.Null()
 end;
 
 end.

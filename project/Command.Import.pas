@@ -12,8 +12,10 @@ uses
   Vcl.ExtCtrls,
   // ---
   ExtGUI.ListBox.Books,
-  Data.Main,
-  ChromeTabs, ChromeTabsClasses, ChromeTabsTypes;
+  ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
+  Proxy.Books,
+  Proxy.Readers,
+  Proxy.Reports;
 
 {$M+}
 
@@ -21,9 +23,11 @@ type
   TImportCommand = class(TCommand)
   private
     FFBooksConfig: TBooksListBoxConfigurator;
-    FDataModMain: TDataModMain;
     FpnMain: TPanel;
     FChromeTabs1: TChromeTabs;
+    FBooks: TBooksProxy;
+    FReaders: TReaderProxy;
+    FReports: TReportProxy;
   protected
     procedure Guard; override;
   public
@@ -35,9 +39,11 @@ type
   published
     property FBooksConfig: TBooksListBoxConfigurator read FFBooksConfig
       write FFBooksConfig;
-    property DataModMain: TDataModMain read FDataModMain write FDataModMain;
     property pnMain: TPanel read FpnMain write FpnMain;
     property ChromeTabs1: TChromeTabs read FChromeTabs1 write FChromeTabs1;
+    property Books: TBooksProxy read FBooks write FBooks;
+    property Readers: TReaderProxy read FReaders write FReaders;
+    property Reports: TReportProxy read FReports write FReports;
   end;
 
 implementation
@@ -58,7 +64,12 @@ uses
 procedure TImportCommand.Guard;
 begin
   inherited;
-
+  Assert (FBooksConfig<>nil);
+  Assert (pnMain<>nil);
+  Assert (ChromeTabs1<>nil);
+  Assert (Books<>nil);
+  Assert (Readers<>nil); 
+  Assert (Reports<>nil);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -114,9 +125,7 @@ var
   tab: TChromeTab;
   jsData: TJSONArray;
   DBGrid1: TDBGrid;
-  DataSrc1: TDataSource;
   DBGrid2: TDBGrid;
-  DataSrc2: TDataSource;
   i: Integer;
   jsRow: TJSONObject;
   email: string;
@@ -168,7 +177,7 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author, b.status,
+        Books.InsertRecord([b.isbn, b.title, b.author, b.status,
           b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
@@ -200,13 +209,11 @@ begin
   //
   { TODO 2: [C] Move code down separate bussines logic from GUI }
   // warning for dataset dependencies, discuss TDBGrid dependencies
-  DataSrc1 := TDataSource.Create(frm);
   DBGrid1 := TDBGrid.Create(frm);
   DBGrid1.AlignWithMargins := True;
   DBGrid1.Parent := frm;
   DBGrid1.Align := Vcl.Controls.alClient;
-  DBGrid1.DataSource := DataSrc1;
-  DataSrc1.DataSet := DataModMain.mtabReaders;
+  DBGrid1.DataSource := Readers.ConstructDataSource(frm);
   DBGrid1.AutoSizeColumns();
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -274,20 +281,18 @@ begin
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
       // Find the Reader in then database using an email address
-      readerId := DataModMain.FindReaderByEmil(email);
+      readerId := Readers.LoacateReaderIdByEmil(email);
       // ----------------------------------------------------------------
       //
       // Append a new reader into the database if requred:
       if System.Variants.VarIsNull(readerId) then
       begin
-        { TODO 2: [G] Extract method }
-        readerId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
-          'ReaderId') + 1;
+        readerId := Readers.generateNewUniqueID();
         //
         // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
         // LastReport, ReadersCreated
         //
-        DataModMain.mtabReaders.AppendRecord([readerId, firstName, lastName,
+        Readers.AppendRecord([readerId, firstName, lastName,
           email, company, 1, dtReported, Now()]);
       end;
       // ----------------------------------------------------------------
@@ -295,7 +300,7 @@ begin
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
+      Reports.AppendRecord([readerId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
       if Application.InDeveloperMode then
@@ -320,14 +325,12 @@ begin
       Height := 5;
     end;
     DBGrid1.Margins.Bottom := 0;
-    DataSrc2 := TDataSource.Create(frm);
     DBGrid2 := TDBGrid.Create(frm);
     DBGrid2.AlignWithMargins := True;
     DBGrid2.Parent := frm;
     DBGrid2.Align := alBottom;
     DBGrid2.Height := frm.Height div 3;
-    DBGrid2.DataSource := DataSrc2;
-    DataSrc2.DataSet := DataModMain.mtabReports;
+    DBGrid2.DataSource := Reports.ConstructDataSource(frm);
     DBGrid2.Margins.Top := 0;
     DBGrid2.AutoSizeColumns();
   finally
