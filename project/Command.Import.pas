@@ -22,7 +22,7 @@ uses
 type
   TImportCommand = class(TCommand)
   private
-    FFBooksConfig: TBooksListBoxConfigurator;
+    FMegaBooks: TBooksListBoxConfigurator;
     FpnMain: TPanel;
     FChromeTabs1: TChromeTabs;
     FBooks: TBooksProxy;
@@ -37,8 +37,8 @@ type
     // ---
     procedure Execute; override;
   published
-    property FBooksConfig: TBooksListBoxConfigurator read FFBooksConfig
-      write FFBooksConfig;
+    property MegaComponentWithBooks: TBooksListBoxConfigurator read FMegaBooks
+      write FMegaBooks;
     property pnMain: TPanel read FpnMain write FpnMain;
     property ChromeTabs1: TChromeTabs read FChromeTabs1 write FChromeTabs1;
     property Books: TBooksProxy read FBooks write FBooks;
@@ -64,7 +64,7 @@ uses
 procedure TImportCommand.Guard;
 begin
   inherited;
-  Assert (FBooksConfig<>nil);
+  Assert (MegaComponentWithBooks<>nil);
   Assert (pnMain<>nil);
   Assert (ChromeTabs1<>nil);
   Assert (Books<>nil);
@@ -169,10 +169,10 @@ begin
       b.currency := jsBook.Values['currency'].Value;
       b.description := jsBook.Values['description'].Value;
       b.imported := Now();
-      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
+      b2 := MegaComponentWithBooks.GetBookList(blkAll).FindByISBN(b.isbn);
       if not Assigned(b2) then
       begin
-        FBooksConfig.InsertNewBook(b);
+        MegaComponentWithBooks.InsertNewBook(b);
         // ----------------------------------------------------------------
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
@@ -276,7 +276,7 @@ begin
       // Locate book by ISBN
       //
       { TODO 2: [G] Extract method }
-      b := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
+      b := MegaComponentWithBooks.GetBookList(blkAll).FindByISBN(bookISBN);
       if not Assigned(b) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
