@@ -26,6 +26,8 @@ type
   protected
     procedure ConnectFields; override;
   public
+    function FindByISBN (const isbnToFind: String): boolean;
+    // ---
     class function CreateMockTable (AOwner: TComponent): TFDMemTable;
     // ---
     property ISBN :TWideStringField read FISBN;
@@ -437,6 +439,11 @@ begin
   end;
   {$ENDREGION}
   Result := ds;
+end;
+
+function TBooksProxy.FindByISBN(const isbnToFind: String): boolean;
+begin
+  Result := FDataSet.Locate('ISBN', isbnToFind, []);
 end;
 
 end.
