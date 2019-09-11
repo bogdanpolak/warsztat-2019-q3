@@ -22,7 +22,7 @@ type
     currency: string;
     imported: TDateTime;
     description: string;
-    constructor Create(Books: IBooksDAO); overload;
+    constructor CreateFromDAO(Books: IBooksDAO); virtual;
   end;
 
   TBookCollection = class(TObjectList<TBook>)
@@ -269,7 +269,7 @@ begin
   BooksDAO.ForEach(
     procedure(Books: IBooksDAO)
     begin
-      self.Add(TBook.Create(Books));
+      self.Add(TBook.CreateFromDAO(Books));
     end);
 end;
 
@@ -288,7 +288,7 @@ end;
 
 { TBook }
 
-constructor TBook.Create(Books: IBooksDAO);
+constructor TBook.CreateFromDAO(Books: IBooksDAO);
 begin
   inherited Create;
   self.isbn := Books.fldISBN.Value;
