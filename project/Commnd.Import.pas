@@ -38,6 +38,7 @@ type
     class procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
       var dtReported: TDateTime); static;
     procedure Execute; override;
+    // ---
     property FBooksConfig: TBooksListBoxConfigurator read FFConfigBooks
       write FFConfigBooks;
     property pnMain: TPanel read FpnMain write FpnMain;
@@ -51,7 +52,7 @@ uses Helper.TApplication, Helper.TDBGrid, Helper.TJSONObject;
 procedure TImportCommand.Guard;
 begin
   inherited;
-
+  Assert(FBooksConfig <> nil);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -130,6 +131,7 @@ var
   TextBookReleseDate: string;
   b2: TBook;
 begin
+  inherited;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -179,13 +181,16 @@ begin
   //
   { TODO 2: [B] Extract method. Read comments and use meaningful }
   // Look for ChromeTabs1.Tabs.Add for code duplication
-  frm := TFrameImport.Create(pnMain);
-  frm.Parent := pnMain;
-  frm.Visible := True;
-  frm.Align := Vcl.Controls.alClient;
-  tab := ChromeTabs1.Tabs.Add;
-  tab.Caption := 'Readers';
-  tab.Data := frm;
+  if Assigned(pnMain) and Assigned(ChromeTabs1) then
+  begin
+    frm := TFrameImport.Create(pnMain);
+    frm.Parent := pnMain;
+    frm.Visible := True;
+    frm.Align := Vcl.Controls.alClient;
+    tab := ChromeTabs1.Tabs.Add;
+    tab.Caption := 'Readers';
+    tab.Data := frm;
+  end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -193,14 +198,17 @@ begin
   //
   { TODO 2: [C] Move code down separate bussines logic from GUI }
   // warning for dataset dependencies, discuss TDBGrid dependencies
-  DataSrc1 := TDataSource.Create(frm);
-  DBGrid1 := TDBGrid.Create(frm);
-  DBGrid1.AlignWithMargins := True;
-  DBGrid1.Parent := frm;
-  DBGrid1.Align := Vcl.Controls.alClient;
-  DBGrid1.DataSource := DataSrc1;
-  DataSrc1.DataSet := DataModMain.mtabReaders;
-  DBGrid1.AutoSizeColumns();
+  if Assigned(pnMain) and Assigned(ChromeTabs1) then
+  begin
+    DataSrc1 := TDataSource.Create(frm);
+    DBGrid1 := TDBGrid.Create(frm);
+    DBGrid1.AlignWithMargins := True;
+    DBGrid1.Parent := frm;
+    DBGrid1.Align := Vcl.Controls.alClient;
+    DBGrid1.DataSource := DataSrc1;
+    DataSrc1.DataSet := DataModMain.mtabReaders;
+    DBGrid1.AutoSizeColumns();
+  end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -295,23 +303,26 @@ begin
         Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
-    with TSplitter.Create(frm) do
+    if Assigned(pnMain) and Assigned(ChromeTabs1) then
     begin
-      Align := alBottom;
-      Parent := frm;
-      Height := 5;
+      with TSplitter.Create(frm) do
+      begin
+        Align := alBottom;
+        Parent := frm;
+        Height := 5;
+      end;
+      DBGrid1.Margins.Bottom := 0;
+      DataSrc2 := TDataSource.Create(frm);
+      DBGrid2 := TDBGrid.Create(frm);
+      DBGrid2.AlignWithMargins := True;
+      DBGrid2.Parent := frm;
+      DBGrid2.Align := alBottom;
+      DBGrid2.Height := frm.Height div 3;
+      DBGrid2.DataSource := DataSrc2;
+      DataSrc2.DataSet := DataModMain.mtabReports;
+      DBGrid2.Margins.Top := 0;
+      DBGrid2.AutoSizeColumns();
     end;
-    DBGrid1.Margins.Bottom := 0;
-    DataSrc2 := TDataSource.Create(frm);
-    DBGrid2 := TDBGrid.Create(frm);
-    DBGrid2.AlignWithMargins := True;
-    DBGrid2.Parent := frm;
-    DBGrid2.Align := alBottom;
-    DBGrid2.Height := frm.Height div 3;
-    DBGrid2.DataSource := DataSrc2;
-    DataSrc2.DataSet := DataModMain.mtabReports;
-    DBGrid2.Margins.Top := 0;
-    DBGrid2.AutoSizeColumns();
   finally
     jsData.Free;
   end;
