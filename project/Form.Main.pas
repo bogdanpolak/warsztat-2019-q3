@@ -41,7 +41,6 @@ type
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     FBooksConfig: TBooksListBoxConfigurator;
-    FApplicationInDeveloperMode: Boolean;
     procedure AutoSizeBooksGroupBoxes();
     procedure BuildDBGridForBooks_InternalQA(frm: TFrameWelcome);
   public
@@ -63,7 +62,7 @@ uses
   Data.Main,
   ClientAPI.Readers,
   ClientAPI.Books,
-  Consts.SQL;
+  Consts.SQL, Helper.TJSONObject, Helper.TApplication, Helper.TDBGrid;
 
 const
   SecureKey = 'delphi-is-the-best';
@@ -124,85 +123,6 @@ begin
   Result := sumHeight;
 end;
 
-{ TODO 2: [Helper] Extract into TDBGrid.ForEachRow class helper }
-function AutoSizeColumns(DBGrid: TDBGrid; const MaxRows: Integer = 25): Integer;
-var
-  DataSet: TDataSet;
-  Bookmark: TBookmark;
-  Count, i: Integer;
-  ColumnsWidth: array of Integer;
-begin
-  SetLength(ColumnsWidth, DBGrid.Columns.Count);
-  for i := 0 to DBGrid.Columns.Count - 1 do
-    if DBGrid.Columns[i].Visible then
-      ColumnsWidth[i] := DBGrid.Canvas.TextWidth
-        (DBGrid.Columns[i].title.Caption + '   ')
-    else
-      ColumnsWidth[i] := 0;
-  if DBGrid.DataSource <> nil then
-    DataSet := DBGrid.DataSource.DataSet
-  else
-    DataSet := nil;
-  if (DataSet <> nil) and DataSet.Active then
-  begin
-    Bookmark := DataSet.GetBookmark;
-    DataSet.DisableControls;
-    try
-      Count := 0;
-      DataSet.First;
-      while not DataSet.Eof and (Count < MaxRows) do
-      begin
-        for i := 0 to DBGrid.Columns.Count - 1 do
-          if DBGrid.Columns[i].Visible then
-            ColumnsWidth[i] := System.Math.Max(ColumnsWidth[i],
-              DBGrid.Canvas.TextWidth(DBGrid.Columns[i].Field.Text + '   '));
-        Inc(Count);
-        DataSet.Next;
-      end;
-    finally
-      DataSet.GotoBookmark(Bookmark);
-      DataSet.FreeBookmark(Bookmark);
-      DataSet.EnableControls;
-    end;
-  end;
-  Count := 0;
-  for i := 0 to DBGrid.Columns.Count - 1 do
-    if DBGrid.Columns[i].Visible then
-    begin
-      DBGrid.Columns[i].Width := ColumnsWidth[i];
-      Inc(Count, ColumnsWidth[i]);
-    end;
-  Result := Count - DBGrid.ClientWidth;
-end;
-
-// ----------------------------------------------------------
-//
-// Function checks is TJsonObject has field and this field has not null value
-//
-{ TODO 2: [Helper] TJSONObject Class helpper and more minigful name expected }
-function fieldAvaliable(jsObject: TJSONObject; const fieldName: string)
-  : Boolean; inline;
-begin
-  Result := Assigned(jsObject.Values[fieldName]) and not jsObject.Values
-    [fieldName].Null;
-end;
-
-{ TODO 2: [Helper] TJSONObject Class helpper and this method has two responsibilities }
-// Warning! In-out var parameter
-// extract separate:  GetIsoDateUtc
-function IsValidIsoDateUtc(jsObj: TJSONObject; const Field: string;
-  var dt: TDateTime): Boolean;
-begin
-  dt := 0;
-  try
-    dt := System.DateUtils.ISO8601ToDate(jsObj.Values[Field].Value, False);
-    Result := True;
-  except
-    on E: Exception do
-      Result := False;
-  end
-end;
-
 { TODO 2: Move into Utils.General }
 function CheckEmail(const s: string): Boolean;
 const
@@ -246,7 +166,7 @@ procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
 begin
   if not CheckEmail(email) then
     raise Exception.Create('Invalid email addres');
-  if not IsValidIsoDateUtc(jsRow, 'created', dtReported) then
+  if not jsRow.IsValidIsoDateUtc('created', dtReported) then
     raise Exception.Create('Invalid date. Expected ISO format');
 end;
 
@@ -311,8 +231,8 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author,
-          b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
+        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author, b.status,
+          b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
     end;
@@ -350,7 +270,7 @@ begin
   DBGrid1.Align := Vcl.Controls.alClient;
   DBGrid1.DataSource := DataSrc1;
   DataSrc1.DataSet := DataModMain.mtabReaders;
-  AutoSizeColumns(DBGrid1);
+  DBGrid1.AutoSizeColumns();
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -373,31 +293,31 @@ begin
       { TODO 3: [A] Move this code into record TReaderReport.LoadFromJSON }
       jsRow := jsData.Items[i] as TJSONObject;
       email := jsRow.Values['email'].Value;
-      if fieldAvaliable(jsRow, 'firstname') then
+      if jsRow.fieldAvaliable( 'firstname') then
         firstName := jsRow.Values['firstname'].Value
       else
         firstName := '';
-      if fieldAvaliable(jsRow, 'lastname') then
+      if jsRow.fieldAvaliable( 'lastname') then
         lastName := jsRow.Values['lastname'].Value
       else
         lastName := '';
-      if fieldAvaliable(jsRow, 'company') then
+      if jsRow.fieldAvaliable( 'company') then
         company := jsRow.Values['company'].Value
       else
         company := '';
-      if fieldAvaliable(jsRow, 'book-isbn') then
+      if jsRow.fieldAvaliable( 'book-isbn') then
         bookISBN := jsRow.Values['book-isbn'].Value
       else
         bookISBN := '';
-      if fieldAvaliable(jsRow, 'book-title') then
+      if jsRow.fieldAvaliable( 'book-title') then
         bookTitle := jsRow.Values['book-title'].Value
       else
         bookTitle := '';
-      if fieldAvaliable(jsRow, 'rating') then
+      if jsRow.fieldAvaliable( 'rating') then
         rating := (jsRow.Values['rating'] as TJSONNumber).AsInt
       else
         rating := -1;
-      if fieldAvaliable(jsRow, 'oppinion') then
+      if jsRow.fieldAvaliable( 'oppinion') then
         oppinion := jsRow.Values['oppinion'].Value
       else
         oppinion := '';
@@ -441,11 +361,11 @@ begin
       DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
-      if FApplicationInDeveloperMode then
+      if Application.InDeveloperMode then
         Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
-    if FApplicationInDeveloperMode then
+    if Application.InDeveloperMode then
       Caption := String.Join(' ,', ss);
     // ----------------------------------------------------------------
     with TSplitter.Create(frm) do
@@ -464,7 +384,7 @@ begin
     DBGrid2.DataSource := DataSrc2;
     DataSrc2.DataSet := DataModMain.mtabReports;
     DBGrid2.Margins.Top := 0;
-    AutoSizeColumns(DBGrid2);
+    DBGrid2.AutoSizeColumns();
   finally
     jsData.Free;
   end;
@@ -496,29 +416,7 @@ begin
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);
-var
-  Extention: string;
-  ExeName: string;
-  ProjectFileName: string;
 begin
-  // ----------------------------------------------------------
-  // Check: If we are in developer mode
-  //
-  // Developer mode id used to change application configuration
-  // during test
-  { TODO 2: [Helper] TApplication.IsDeveloperMode }
-{$IFDEF DEBUG}
-  Extention := '.dpr';
-  ExeName := ExtractFileName(Application.ExeName);
-  ProjectFileName := ChangeFileExt(ExeName, Extention);
-  FApplicationInDeveloperMode := FileExists(ProjectFileName) or
-    FileExists('..\..\' + ProjectFileName);
-{$ELSE}
-  // To rename attribute (variable in the object) FDevMod I'm using buiid in
-  // IDE refactoring which is great, but be aware:
-  // Refactoring [Rename Variable] can't find this place :-(
-  FDevMod := False;
-{$ENDIF}
   pnMain.Caption := '';
 end;
 
@@ -560,7 +458,7 @@ begin
   DataGrid.Align := alClient;
   DataGrid.DataSource := datasrc;
   datasrc.DataSet := DataModMain.mtabBooks;
-  AutoSizeColumns(DataGrid);
+  DataGrid.AutoSizeColumns();
 end;
 
 procedure TForm1.Splitter1Moved(Sender: TObject);
@@ -579,7 +477,7 @@ var
   res: Variant;
 begin
   tmrAppReady.Enabled := False;
-  if FApplicationInDeveloperMode then
+  if Application.InDeveloperMode then
     ReportMemoryLeaksOnShutdown := True;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -658,7 +556,7 @@ begin
   FBooksConfig := TBooksListBoxConfigurator.Create(self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
-  if FApplicationInDeveloperMode and InInternalQualityMode then
+  if Application.InDeveloperMode and InInternalQualityMode then
   begin
     BuildDBGridForBooks_InternalQA(frm);
   end;
