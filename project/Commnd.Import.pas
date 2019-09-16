@@ -58,6 +58,13 @@ type
     property ReportProxy: TReportProxy read FReportProxy write FReportProxy;
   end;
 
+type
+  TTestImportCommand = class(TImportCommand)
+  protected
+    function ImportReaderReports(const token: string): TJSONArray; override;
+    function ImportBooks(const token: string): TJSONArray; override;
+  end;
+
 implementation
 
 uses
@@ -354,6 +361,48 @@ begin
     DBGrid2.Margins.Top := 0;
     DBGrid2.AutoSizeColumns;
   end;
+end;
+
+{ TTestImportCommand }
+
+function TTestImportCommand.ImportBooks(const token: string): TJSONArray;
+var
+  s: string;
+begin
+  inherited;
+  s := '[{' +
+		'"status": "cooming-soon",' +
+    '"title": "Hands-On Design Patterns with C# and .NET Core",' +
+    '"isbn": "978-1788625258",' +
+    '"author": "Gaurav Aroraa, Jeffrey Chilberto",' +
+    '"date": "Jan 2019",' +
+    '"pages": 437,' +
+    '"price": 25.83,' +
+    '"currency": "EUR",' +
+    '"description": "Build effective applications in C# and .NET Core by using proven programming practices and design techniques."' +
+    '}]';
+  Result := TJSONObject.ParseJSONValue(s)  as TJSONArray;
+end;
+
+function TTestImportCommand.ImportReaderReports(const token: string)
+  : TJSONArray;
+var
+  s: string;
+begin
+  s := '[{"firstname": "Sobieraj", "lastname": "Stanislaw",' +
+    '"email": "staszek.sobieraj@empik.com","company": "",' +
+    '"book-isbn": "978-1788621304",' +
+    '"book-title": "Delphi Cookbook - Third Edition",' + '"rating": 10,' +
+    '"oppinion": "Great! There are lots of an easy to implement recepies. Very useful for the future. I recommend it to an every Delphi developer.",'
+    + '"created": "2018-07-27T18:30:49Z"' +
+    '},{'+   (* *)
+    '"firstname": "Gervasio","lastname": "Brancato",' +
+    '"email": "rervasio3419@email.it","company": "Komerci",' +
+    '"book-isbn": "978-1941266038",' + '"book-title": "Coding in Delphi",' +
+    '"rating": 9,' +
+    '"oppinion": "This must-read book highlights the importance writung of clean and resposible code in Delphi.",'
+    + '"created": "2018-08-15T20:12:31Z"' + '}]';
+  Result := TJSONObject.ParseJSONValue(s)  as TJSONArray;
 end;
 
 end.
