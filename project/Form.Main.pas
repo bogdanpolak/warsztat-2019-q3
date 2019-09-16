@@ -31,13 +31,13 @@ type
     tmrAppReady: TTimer;
     Splitter2: TSplitter;
     procedure FormCreate(Sender: TObject);
+    procedure tmrAppReadyTimer(Sender: TObject);
     procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab;
       var Close: Boolean);
     procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
       TabChangeType: TTabChangeType);
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
-    procedure tmrAppReadyTimer(Sender: TObject);
   private
     FBooksConfig: TBooksListBoxConfigurator;
     cmdImportReports: TImportCommand;
@@ -45,7 +45,10 @@ type
     procedure AutoSizeBooksGroupBoxes();
     procedure BuildDBGridForBooks_InternalQA(frm: TFrameWelcome);
     class function DBVersionToString(VerDB: Integer): string; static;
-    procedure BuildCommands;
+    procedure CreateAndShowWelcomeFrame(var frm: TFrameWelcome);
+    function ConnectToDatabaseServer(frm: TFrameWelcome): Boolean;
+    function IsCorrectDatabaseVersionNumber(frm: TFrameWelcome): Boolean;
+    procedure BuildCommandsAndActions;
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -87,11 +90,15 @@ resourcestring
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-  pnMain.Caption := '';
+  if Application.InDeveloperMode then
+    ReportMemoryLeaksOnShutdown := True;
+  // !!! Please do not add here code if it's not required
+  // !!! Place for the application initialization code is in the OnFormReady
 end;
 
 procedure TForm1.tmrAppReadyTimer(Sender: TObject);
 begin
+  tmrAppReady.Enabled := False;
   OnFormReady;
 end;
 
@@ -207,40 +214,27 @@ begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
 end;
 
-procedure TForm1.BuildCommands;
+procedure TForm1.BuildCommandsAndActions;
 begin
   cmdImportReports := TImportCommand.Create(Self);
-  with cmdImportReports do begin
+  with cmdImportReports do
+  begin
     ChromeTabs1 := Self.ChromeTabs1;
     pnMain := Self.pnMain;
     FBooksConfig := Self.FBooksConfig;
   end;
   btnImport.Action := TCommandAction.Create(Self);
-  with (btnImport.Action as TCommandAction) do begin
+  with (btnImport.Action as TCommandAction) do
+  begin
     Caption := 'Import Reports';
     Command := cmdImportReports;
   end;
 end;
 
-procedure TForm1.OnFormReady;
+procedure TForm1.CreateAndShowWelcomeFrame(var frm: TFrameWelcome);
 var
-  frm: TFrameWelcome;
   tab: TChromeTab;
-  VersionNr: Integer;
-  msg1: string;
-  UserName: string;
-  password: string;
-  res: Variant;
 begin
-  tmrAppReady.Enabled := False;
-  if Application.InDeveloperMode then
-    ReportMemoryLeaksOnShutdown := True;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Create and show Welcome Frame
-  //
-  { TODO 2: [B] Extract method. Read comments and use meaningful }
   frm := TFrameWelcome.Create(pnMain);
   frm.Parent := pnMain;
   frm.Visible := True;
@@ -248,17 +242,23 @@ begin
   tab := ChromeTabs1.Tabs.Add;
   tab.Caption := 'Welcome';
   tab.Data := frm;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Connect to database server
-  // Check application user and database structure (DB version)
-  //
+end;
+
+function TForm1.ConnectToDatabaseServer(frm: TFrameWelcome): Boolean;
+var
+  msg1: string;
+  UserName: string;
+  password: string;
+begin
+  // 1) Connect to database server
+  // 2) Checks application user
+  Result := False;
   try
     UserName := FDManager.ConnectionDefs.ConnectionDefByName
       (FDConnection1.ConnectionDefName).Params.UserName;
     password := AES128_Decrypt(SecurePassword, SecureKey);
     FDConnection1.Open(UserName, password);
+    Result := True;
   except
     on E: EFDDBEngineException do
     begin
@@ -268,13 +268,22 @@ begin
         ekServerGone:
           msg1 := SDBServerGone;
       else
-        msg1 := SDBConnectionError
+        msg1 := SDBConnectionError;
       end;
       frm.AddInfo(0, msg1, True);
       frm.AddInfo(1, E.Message, False);
-      exit;
     end;
   end;
+end;
+
+function TForm1.IsCorrectDatabaseVersionNumber(frm: TFrameWelcome): Boolean;
+var
+  res: Variant;
+  msg1: string;
+  VersionNr: Integer;
+begin
+  // Checks database structure (DB version)
+  Result := False;
   try
     res := FDConnection1.ExecSQLScalar(SQL_SELECT_DatabaseVersion);
   except
@@ -287,19 +296,28 @@ begin
     end;
   end;
   VersionNr := res;
-  if VersionNr = ExpectedDatabaseVersionNr then
-    { TODO: Why the application is doing nothing when we successfully connected into the database }
-  else
+  Result := (VersionNr = ExpectedDatabaseVersionNr);
+  if not Result then
   begin
     frm.AddInfo(0, StrNotSupportedDBVersion, True);
     frm.AddInfo(1, 'Oczekiwana wersja bazy: ' +
       DBVersionToString(ExpectedDatabaseVersionNr), True);
     frm.AddInfo(1, 'Aktualna wersja bazy: ' + DBVersionToString
       (VersionNr), True);
+    exit;
   end;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
+end;
+
+procedure TForm1.OnFormReady;
+var
+  frm: TFrameWelcome;
+begin
+  pnMain.Caption := '';
+  CreateAndShowWelcomeFrame(frm);
+  if not ConnectToDatabaseServer(frm) then
+    exit;
+  if not IsCorrectDatabaseVersionNumber(frm) then
+    exit;
   DataModMain.OpenDataSets;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -313,7 +331,7 @@ begin
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
   // ----------------------------------------------------------
-  BuildCommands;
+  BuildCommandsAndActions;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   if Application.InDeveloperMode and InInternalQualityMode then
