@@ -10,12 +10,14 @@ uses
   Data.DB,
   Vcl.Graphics, Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls,
   Vcl.ExtCtrls, Vcl.Grids, Vcl.DBGrids,
+  Vcl.Pattern.Command,
   ChromeTabs, ChromeTabsClasses, ChromeTabsTypes,
   Fake.FDConnection,
   Frame.Welcome,
   {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
   // Dependency is requred by attribute TBooksListBoxConfigurator
-  ExtGUI.ListBox.Books, Commnd.Import, Vcl.Pattern.Command;
+  ExtGUI.ListBox.Books,
+  Commnd.Import;
 
 type
   TForm1 = class(TForm)
@@ -66,9 +68,10 @@ uses
   Frame.Import,
   Utils.General,
   Data.Main,
-  ClientAPI.Readers,
-  ClientAPI.Books,
-  Consts.SQL, Helper.TJSONObject, Helper.TApplication, Helper.TDBGrid;
+  Consts.SQL,
+  Helper.TJSONObject,
+  Helper.TApplication,
+  Helper.TDBGrid;
 
 const
   SecureKey = 'delphi-is-the-best';
