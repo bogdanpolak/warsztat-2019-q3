@@ -65,7 +65,7 @@ type
     function IsCorrectDatabaseVersionNumber(frm: TFrameWelcome): Boolean;
     procedure BuildCommandsAndActions;
     procedure BuildDataProxies(MainDataModule: TDataModMain);
-    procedure ConstructModels ();
+    procedure ConstructModels();
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -236,8 +236,7 @@ begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
 end;
 
-
-procedure TForm1.BuildDataProxies (MainDataModule: TDataModMain);
+procedure TForm1.BuildDataProxies(MainDataModule: TDataModMain);
 begin
   BookProxy := TDataProxyFactory.CreateProxy<TBooksProxy>(Self,
     MainDataModule.mtabBooks);
@@ -249,11 +248,11 @@ end;
 
 procedure TForm1.ConstructModels;
 begin
-  Books := TBookCollection.Create (true);
+  Books := TBookCollection.Create(True);
   BookProxy.ForEach(
     procedure
     begin
-      Books.Add( BookProxy.ConstructBookModel );
+      Books.Add(BookProxy.ConstructBookModel);
     end);
 end;
 
@@ -265,6 +264,11 @@ begin
     MainFormChromeTabs := Self.ChromeTabs1;
     MainFormFramePanel := Self.pnMain;
     FBooksConfig := Self.FBooksConfig;
+    Books := Self.Books;
+    OnAddNewBook := procedure(b: TBook)
+      begin
+        Self.FBooksConfig.AddNewAvaliableBook(b);
+      end;
     BookProxy := Self.BookProxy;
     ReaderProxy := Self.ReaderProxy;
     ReportProxy := Self.ReportProxy;
@@ -366,8 +370,8 @@ begin
   if not IsCorrectDatabaseVersionNumber(frm) then
     exit;
   DataModMain.OpenDataSets;
-  BuildDataProxies (DataModMain);
-  ConstructModels ();
+  BuildDataProxies(DataModMain);
+  ConstructModels();
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -377,7 +381,7 @@ begin
   // * Setup OwnerDraw mode
   //
   FBooksConfig := TBooksListBoxConfigurator.Create(Self);
-  FBooksConfig.Books := self.Books;
+  FBooksConfig.Books := Self.Books;
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -392,7 +396,7 @@ end;
 
 procedure TForm1.OnFormTearDown;
 begin
-  FreeAndNil (Books);
+  FreeAndNil(Books);
 end;
 
 end.

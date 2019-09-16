@@ -34,7 +34,7 @@ type
     { TODO 3: Introduce 3 properties: ListBoxOnShelf, ListBoxAvaliable, Books }
     procedure PrepareListBoxes(lbxOnShelf, lbxAvaliable: TListBox);
     function ConstructBookList (kind: TBookListKind): TBookCollection;
-    procedure InsertNewBook (b:TBook);
+    procedure AddNewAvaliableBook (b:TBook);
     property Books: TBookCollection read FBooks write FBooks;
   end;
 
@@ -78,11 +78,8 @@ begin
   Assert( Books <> nil );
 end;
 
-procedure TBooksListBoxConfigurator.InsertNewBook(b: TBook);
+procedure TBooksListBoxConfigurator.AddNewAvaliableBook(b: TBook);
 begin
-  // TODO: Remove Books.Add(b); (use Find in Files)
-  Books.Add(b);
-  // ------------
   Guard;
   FListBoxAvaliable.AddItem(b.title,b);
 end;
