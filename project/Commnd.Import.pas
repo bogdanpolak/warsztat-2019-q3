@@ -8,6 +8,7 @@ uses
   System.SysUtils,
   System.Classes,
   System.JSON,
+  System.Generics.Collections,
   System.Variants,
   Vcl.Pattern.Command,
   Vcl.ExtCtrls,
@@ -175,49 +176,13 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        BookProxy.InsertRecord([b.isbn, b.title, b.author,
-          b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
+        BookProxy.InsertRecord([b.isbn, b.title, b.author, b.status,
+          b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
     end;
   finally
     jsBooks.Free;
-  end;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Create new frame, show it add to ChromeTabs
-  // 1. Create TFrameImport.
-  // 2. Embed frame in pnMain (show)
-  // 3. Add new ChromeTab
-  //
-  { TODO 2: [B] Extract method. Read comments and use meaningful }
-  // Look for ChromeTabs1.Tabs.Add for code duplication
-  if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
-  begin
-    frm := TFrameImport.Create(MainFormFramePanel);
-    frm.Parent := MainFormFramePanel;
-    frm.Visible := True;
-    frm.Align := Vcl.Controls.alClient;
-    tab := MainFormChromeTabs.Tabs.Add;
-    tab.Caption := 'Readers';
-    tab.Data := frm;
-  end;
-  // ----------------------------------------------------------
-  // ----------------------------------------------------------
-  //
-  // Dynamically Add TDBGrid to TFrameImport
-  //
-  { TODO 2: [C] Move code down separate bussines logic from GUI }
-  // warning for dataset dependencies, discuss TDBGrid dependencies
-  if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
-  begin
-    DBGrid1 := TDBGrid.Create(frm);
-    DBGrid1.AlignWithMargins := True;
-    DBGrid1.Parent := frm;
-    DBGrid1.Align := Vcl.Controls.alClient;
-    DBGrid1.DataSource := ReaderProxy.ConstructDataSource(frm);
-    DBGrid1.AutoSizeColumns();
   end;
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -297,23 +262,57 @@ begin
         // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
         // LastReport, ReadersCreated
         //
-        ReaderProxy.AppendRecord([readerId, firstName, lastName,
-          email, company, 1, dtReported, Now()]);
+        ReaderProxy.AppendRecord([readerId, firstName, lastName, email, company,
+          1, dtReported, Now()]);
       end;
       // ----------------------------------------------------------------
       //
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      ReportProxy.AppendRecord([readerId, bookISBN, rating,
-        oppinion, dtReported]);
+      ReportProxy.AppendRecord([readerId, bookISBN, rating, oppinion,
+        dtReported]);
       // ----------------------------------------------------------------
       if Application.InDeveloperMode then
         Insert([rating.ToString], ss, maxInt);
     end;
-    // ----------------------------------------------------------------
+    // ----------------------------------------------------------
+    // ----------------------------------------------------------
+    //
+    // Create new frame, show it add to ChromeTabs
+    // 1. Create TFrameImport.
+    // 2. Embed frame in pnMain (show)
+    // 3. Add new ChromeTab
+    //
+    { TODO 2: [B] Extract method. Read comments and use meaningful }
+    // Look for ChromeTabs1.Tabs.Add for code duplication
+    frm := nil;
     if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
     begin
+      frm := TFrameImport.Create(MainFormFramePanel);
+      frm.Parent := MainFormFramePanel;
+      frm.Visible := True;
+      frm.Align := Vcl.Controls.alClient;
+      tab := MainFormChromeTabs.Tabs.Add;
+      tab.Caption := 'Readers';
+      tab.Data := frm;
+    end;
+    // ----------------------------------------------------------
+    // ----------------------------------------------------------
+    //
+    // Dynamically Add TDBGrids to TFrameImport
+    //
+    { TODO 2: [C] Move code down separate bussines logic from GUI }
+    // warning for dataset dependencies, discuss TDBGrid dependencies
+    if Assigned(frm) and Assigned(MainFormFramePanel) and
+      Assigned(MainFormChromeTabs) then
+    begin
+      DBGrid1 := TDBGrid.Create(frm);
+      DBGrid1.AlignWithMargins := True;
+      DBGrid1.Parent := frm;
+      DBGrid1.Align := Vcl.Controls.alClient;
+      DBGrid1.DataSource := ReaderProxy.ConstructDataSource(frm);
+      DBGrid1.AutoSizeColumns();
       with TSplitter.Create(frm) do
       begin
         Align := alBottom;
@@ -330,6 +329,7 @@ begin
       DBGrid2.Margins.Top := 0;
       DBGrid2.AutoSizeColumns();
     end;
+    // ----------------------------------------------------------------
   finally
     jsData.Free;
   end;

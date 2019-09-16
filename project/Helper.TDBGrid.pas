@@ -3,6 +3,7 @@ unit Helper.TDBGrid;
 interface
 
 uses
+  System.Classes,
   System.Math,
   Data.DB,
   Vcl.DBGrids;
