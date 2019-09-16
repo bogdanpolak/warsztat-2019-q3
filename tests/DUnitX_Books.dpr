@@ -11,7 +11,20 @@ uses
   DUnitX.Loggers.Console,
   DUnitX.Loggers.Xml.NUnit,
   DUnitX.TestFramework,
-  Test.ImportCommand in 'Test.ImportCommand.pas';
+  Test.ImportCommand in 'Test.ImportCommand.pas',
+  Commnd.Import in '..\project\Commnd.Import.pas',
+  Vcl.Pattern.Command in '..\project\Vcl.Pattern.Command.pas',
+  Frame.Import in '..\project\Frame.Import.pas' {FrameImport: TFrame},
+  ClientAPI.Books in '..\project\api\ClientAPI.Books.pas',
+  Consts.Application in '..\project\Consts.Application.pas',
+  Data.DataProxy.Factory in '..\project\proxy\Data.DataProxy.Factory.pas',
+  Data.DataProxy in '..\project\proxy\Data.DataProxy.pas',
+  Proxy.Books in '..\project\proxy\Proxy.Books.pas',
+  Proxy.Readers in '..\project\proxy\Proxy.Readers.pas',
+  Proxy.Reports in '..\project\proxy\Proxy.Reports.pas',
+  Model.Books in '..\project\model\Model.Books.pas',
+  Helper.TDBGrid in '..\project\Helper.TDBGrid.pas',
+  Helper.TJSONObject in '..\project\Helper.TJSONObject.pas';
 
 var
   runner : ITestRunner;
