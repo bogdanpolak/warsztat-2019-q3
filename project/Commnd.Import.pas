@@ -19,7 +19,6 @@ uses
   // ---
   Frame.Import,
   ClientAPI.Books,
-  ClientAPI.Readers,
   Consts.Application,
   Proxy.Books,
   Proxy.Readers,
