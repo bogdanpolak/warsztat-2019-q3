@@ -17,7 +17,12 @@ uses
   {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
   // Dependency is requred by attribute TBooksListBoxConfigurator
   ExtGUI.ListBox.Books,
-  Commnd.Import;
+  Commnd.Import,
+  Data.DataProxy,
+  Data.DataProxy.Factory,
+  Proxy.Books,
+  Proxy.Readers,
+  Proxy.Reports;
 
 type
   TForm1 = class(TForm)
@@ -225,7 +230,13 @@ begin
     MainFormChromeTabs := Self.ChromeTabs1;
     MainFormFramePanel := Self.pnMain;
     FBooksConfig := Self.FBooksConfig;
-    MainDataModule := Data.Main.DataModMain;
+    BookProxy := TDataProxyFactory.CreateProxy<TBooksProxy>(Self,
+      DataModMain.mtabBooks);
+    ReaderProxy := TDataProxyFactory.CreateProxy<TReaderProxy>(Self,
+      DataModMain.mtabReaders);
+    ReportProxy := TDataProxyFactory.CreateProxy<TReportProxy>(Self,
+      DataModMain.mtabReports);
+
   end;
   btnImport.Action := TCommandAction.Create(Self);
   with (btnImport.Action as TCommandAction) do

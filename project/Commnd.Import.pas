@@ -21,7 +21,9 @@ uses
   ClientAPI.Readers,
   Consts.Application,
   ExtGUI.ListBox.Books,
-  Data.Main;
+  Proxy.Books,
+  Proxy.Readers,
+  Proxy.Reports;
 
 type
   TImportCommand = class(TCommand)
@@ -31,7 +33,9 @@ type
     FFConfigBooks: TBooksListBoxConfigurator;
     FpnMain: TPanel;
     FChromeTabs1: TChromeTabs;
-    FDataModMain: TDataModMain;
+    FBookProxy: TBooksProxy;
+    FReaderProxy: TReaderProxy;
+    FReportProxy: TReportProxy;
   protected
     procedure Guard; override;
   public
@@ -45,7 +49,9 @@ type
     property MainFormFramePanel: TPanel read FpnMain write FpnMain;
     property MainFormChromeTabs: TChromeTabs read FChromeTabs1
       write FChromeTabs1;
-    property MainDataModule: TDataModMain read FDataModMain write FDataModMain;
+    property BookProxy: TBooksProxy read FBookProxy write FBookProxy;
+    property ReaderProxy: TReaderProxy read FReaderProxy write FReaderProxy;
+    property ReportProxy: TReportProxy read FReportProxy write FReportProxy;
   end;
 
 implementation
@@ -59,7 +65,9 @@ procedure TImportCommand.Guard;
 begin
   inherited;
   Assert(FBooksConfig <> nil);
-  Assert(MainDataModule <> nil);
+  Assert(BookProxy <> nil);
+  Assert(ReaderProxy <> nil);
+  Assert(ReportProxy <> nil);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -115,9 +123,7 @@ var
   tab: TChromeTab;
   jsData: TJSONArray;
   DBGrid1: TDBGrid;
-  DataSrc1: TDataSource;
   DBGrid2: TDBGrid;
-  DataSrc2: TDataSource;
   i: Integer;
   jsRow: TJSONObject;
   email: string;
@@ -169,7 +175,7 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        MainDataModule.mtabBooks.InsertRecord([b.isbn, b.title, b.author,
+        BookProxy.InsertRecord([b.isbn, b.title, b.author,
           b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
@@ -206,13 +212,11 @@ begin
   // warning for dataset dependencies, discuss TDBGrid dependencies
   if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
   begin
-    DataSrc1 := TDataSource.Create(frm);
     DBGrid1 := TDBGrid.Create(frm);
     DBGrid1.AlignWithMargins := True;
     DBGrid1.Parent := frm;
     DBGrid1.Align := Vcl.Controls.alClient;
-    DBGrid1.DataSource := DataSrc1;
-    DataSrc1.DataSet := MainDataModule.mtabReaders;
+    DBGrid1.DataSource := ReaderProxy.ConstructDataSource(frm);
     DBGrid1.AutoSizeColumns();
   end;
   // ----------------------------------------------------------
@@ -281,20 +285,19 @@ begin
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
       // Find the Reader in then database using an email address
-      readerId := MainDataModule.FindReaderByEmil(email);
+      readerId := ReaderProxy.LoacateReaderIdByEmil(email);
       // ----------------------------------------------------------------
       //
       // Append a new reader into the database if requred:
       if System.Variants.VarIsNull(readerId) then
       begin
         { TODO 2: [G] Extract method }
-        readerId := MainDataModule.GetMaxValueInDataSet
-          (MainDataModule.mtabReaders, 'ReaderId') + 1;
+        readerId := ReaderProxy.generateNewUniqueID();
         //
         // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
         // LastReport, ReadersCreated
         //
-        MainDataModule.mtabReaders.AppendRecord([readerId, firstName, lastName,
+        ReaderProxy.AppendRecord([readerId, firstName, lastName,
           email, company, 1, dtReported, Now()]);
       end;
       // ----------------------------------------------------------------
@@ -302,7 +305,7 @@ begin
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      MainDataModule.mtabReports.AppendRecord([readerId, bookISBN, rating,
+      ReportProxy.AppendRecord([readerId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
       if Application.InDeveloperMode then
@@ -318,14 +321,12 @@ begin
         Height := 5;
       end;
       DBGrid1.Margins.Bottom := 0;
-      DataSrc2 := TDataSource.Create(frm);
       DBGrid2 := TDBGrid.Create(frm);
       DBGrid2.AlignWithMargins := True;
       DBGrid2.Parent := frm;
       DBGrid2.Align := alBottom;
       DBGrid2.Height := frm.Height div 3;
-      DBGrid2.DataSource := DataSrc2;
-      DataSrc2.DataSet := MainDataModule.mtabReports;
+      DBGrid2.DataSource := ReportProxy.ConstructDataSource(frm);
       DBGrid2.Margins.Top := 0;
       DBGrid2.AutoSizeColumns();
     end;
