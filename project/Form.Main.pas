@@ -15,7 +15,7 @@ uses
   Frame.Welcome,
   {TODO 3: [D] Resolve dependency on ExtGUI.ListBox.Books. Too tightly coupled}
   // Dependency is requred by attribute TBooksListBoxConfigurator
-  ExtGUI.ListBox.Books, Commnd.Import;
+  ExtGUI.ListBox.Books, Commnd.Import, Vcl.Pattern.Command;
 
 type
   TForm1 = class(TForm)
@@ -31,7 +31,6 @@ type
     tmrAppReady: TTimer;
     Splitter2: TSplitter;
     procedure FormCreate(Sender: TObject);
-    procedure btnImportClick(Sender: TObject);
     procedure ChromeTabs1ButtonCloseTabClick(Sender: TObject; ATab: TChromeTab;
       var Close: Boolean);
     procedure ChromeTabs1Change(Sender: TObject; ATab: TChromeTab;
@@ -41,8 +40,12 @@ type
     procedure tmrAppReadyTimer(Sender: TObject);
   private
     FBooksConfig: TBooksListBoxConfigurator;
+    cmdImportReports: TImportCommand;
+    procedure OnFormReady;
     procedure AutoSizeBooksGroupBoxes();
     procedure BuildDBGridForBooks_InternalQA(frm: TFrameWelcome);
+    class function DBVersionToString(VerDB: Integer): string; static;
+    procedure BuildCommands;
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -82,9 +85,14 @@ resourcestring
   StrNotSupportedDBVersion = 'Not supported database version. Please' +
     ' update database structures.';
 
-function DBVersionToString(VerDB: Integer): string;
+procedure TForm1.FormCreate(Sender: TObject);
 begin
-  Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
+  pnMain.Caption := '';
+end;
+
+procedure TForm1.tmrAppReadyTimer(Sender: TObject);
+begin
+  OnFormReady;
 end;
 
 procedure TForm1.FormResize(Sender: TObject);
@@ -123,69 +131,6 @@ begin
   Result := sumHeight;
 end;
 
-{ TODO 2: Move into Utils.General }
-function CheckEmail(const s: string): Boolean;
-const
-  EMAIL_REGEX = '^((?>[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+\x20*|"((?=[\x01-\x7f])' +
-    '[^"\\]|\\[\x01-\x7f])*"\x20*)*(?<angle><))?((?!\.)' +
-    '(?>\.?[a-zA-Z\d!#$%&''*+\-/=?^_`{|}~]+)+|"((?=[\x01-\x7f])' +
-    '[^"\\]|\\[\x01-\x7f])*")@(((?!-)[a-zA-Z\d\-]+(?<!-)\.)+[a-zA-Z]' +
-    '{2,}|\[(((?(?<!\[)\.)(25[0-5]|2[0-4]\d|[01]?\d?\d))' +
-    '{4}|[a-zA-Z\d\-]*[a-zA-Z\d]:((?=[\x01-\x7f])[^\\\[\]]|\\' +
-    '[\x01-\x7f])+)\])(?(angle)>)$';
-begin
-  Result := System.RegularExpressions.TRegEx.IsMatch(s, EMAIL_REGEX);
-end;
-
-function BooksToDateTime(const s: string): TDateTime;
-const
-  months: array [1 .. 12] of string = ('Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec');
-var
-  m: string;
-  y: string;
-  i: Integer;
-  mm: Integer;
-  yy: Integer;
-begin
-  m := s.Substring(0, 3);
-  y := s.Substring(4);
-  mm := 0;
-  for i := 1 to 12 do
-    if months[i].ToUpper = m.ToUpper then
-      mm := i;
-  if mm = 0 then
-    raise ERangeError.Create('Incorect mont name in the date: ' + s);
-  yy := y.ToInteger();
-  Result := EncodeDate(yy, mm, 1);
-end;
-
-// TODO 3: Move this procedure into class (idea)
-procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
-  var dtReported: TDateTime);
-begin
-  if not CheckEmail(email) then
-    raise Exception.Create('Invalid email addres');
-  if not jsRow.IsValidIsoDateUtc('created', dtReported) then
-    raise Exception.Create('Invalid date. Expected ISO format');
-end;
-
-{ TODO 2: [A] Method is too large. Comments is showing separate methods }
-procedure TForm1.btnImportClick(Sender: TObject);
-var
-  cmd: TImportCommand;
-begin
-  cmd := TImportCommand.Create(Self);
-  try
-    cmd.FBooksConfig := Self.FBooksConfig;
-    cmd.pnMain := Self.pnMain;
-    cmd.ChromeTabs1 := Self.ChromeTabs1;
-    cmd.Execute;
-  finally
-    cmd.Free;
-  end;
-end;
-
 procedure TForm1.ChromeTabs1ButtonCloseTabClick(Sender: TObject;
   ATab: TChromeTab; var Close: Boolean);
 var
@@ -209,11 +154,6 @@ begin
       (obj as TFrame).Visible := True;
     end;
   end;
-end;
-
-procedure TForm1.FormCreate(Sender: TObject);
-begin
-  pnMain.Caption := '';
 end;
 
 procedure TForm1.AutoSizeBooksGroupBoxes();
@@ -262,7 +202,27 @@ begin
   (Sender as TSplitter).Tag := 1;
 end;
 
-procedure TForm1.tmrAppReadyTimer(Sender: TObject);
+class function TForm1.DBVersionToString(VerDB: Integer): string;
+begin
+  Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
+end;
+
+procedure TForm1.BuildCommands;
+begin
+  cmdImportReports := TImportCommand.Create(Self);
+  with cmdImportReports do begin
+    ChromeTabs1 := Self.ChromeTabs1;
+    pnMain := Self.pnMain;
+    FBooksConfig := Self.FBooksConfig;
+  end;
+  btnImport.Action := TCommandAction.Create(Self);
+  with (btnImport.Action as TCommandAction) do begin
+    Caption := 'Import Reports';
+    Command := cmdImportReports;
+  end;
+end;
+
+procedure TForm1.OnFormReady;
 var
   frm: TFrameWelcome;
   tab: TChromeTab;
@@ -349,8 +309,12 @@ begin
   // * Setup drag&drop functionality for two list boxes
   // * Setup OwnerDraw mode
   //
-  FBooksConfig := TBooksListBoxConfigurator.Create(self);
+  FBooksConfig := TBooksListBoxConfigurator.Create(Self);
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
+  // ----------------------------------------------------------
+  // ----------------------------------------------------------
+  BuildCommands;
+  // ----------------------------------------------------------
   // ----------------------------------------------------------
   if Application.InDeveloperMode and InInternalQualityMode then
   begin
