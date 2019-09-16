@@ -19,7 +19,6 @@ uses
   // ---
   Frame.Import,
   ClientAPI.Books,
-  ClientAPI.Readers,
   Consts.Application,
   Proxy.Books,
   Proxy.Readers,
@@ -41,6 +40,8 @@ type
     procedure BuildAndSetupVisualComponents;
   protected
     procedure Guard; override;
+    function ImportReaderReports(const token: string): TJSONArray; virtual;
+    function ImportBooks(const token: string): TJSONArray; virtual;
   public
     class function BooksToDateTime(const s: string): TDateTime; static;
     class procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
@@ -57,6 +58,13 @@ type
     property ReportProxy: TReportProxy read FReportProxy write FReportProxy;
   end;
 
+type
+  TTestImportCommand = class(TImportCommand)
+  protected
+    function ImportReaderReports(const token: string): TJSONArray; override;
+    function ImportBooks(const token: string): TJSONArray; override;
+  end;
+
 implementation
 
 uses
@@ -71,6 +79,16 @@ begin
   Assert(BookProxy <> nil);
   Assert(ReaderProxy <> nil);
   Assert(ReportProxy <> nil);
+end;
+
+function TImportCommand.ImportBooks(const token: string): TJSONArray;
+begin
+  Result := TWebServiceBooks.ImportBooks(Client_API_Token);
+end;
+
+function TImportCommand.ImportReaderReports(const token: string): TJSONArray;
+begin
+  Result := TWebServiceBooks.ImportReaderReports(Client_API_Token);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -149,7 +167,7 @@ begin
   // Import new Books data from OpenAPI
   //
   { TODO 2: [A] Extract method. Read comments and use meaningful name }
-  jsBooks := ImportBooksFromWebService(Client_API_Token);
+  jsBooks := Self.ImportBooks(Client_API_Token);
   try
     for i := 0 to jsBooks.Count - 1 do
     begin
@@ -191,7 +209,7 @@ begin
   // - Load JSON from WebService
   // - Validate JSON and insert new a Readers into the Database
   //
-  jsData := ImportReaderReportsFromWebService(Client_API_Token);
+  jsData := Self.ImportReaderReports(Client_API_Token);
   { TODO 2: [D] Extract method. Block try-catch is separate responsibility }
   try
     for i := 0 to jsData.Count - 1 do
@@ -343,6 +361,48 @@ begin
     DBGrid2.Margins.Top := 0;
     DBGrid2.AutoSizeColumns;
   end;
+end;
+
+{ TTestImportCommand }
+
+function TTestImportCommand.ImportBooks(const token: string): TJSONArray;
+var
+  s: string;
+begin
+  inherited;
+  s := '[{' +
+		'"status": "cooming-soon",' +
+    '"title": "Hands-On Design Patterns with C# and .NET Core",' +
+    '"isbn": "978-1788625258",' +
+    '"author": "Gaurav Aroraa, Jeffrey Chilberto",' +
+    '"date": "Jan 2019",' +
+    '"pages": 437,' +
+    '"price": 25.83,' +
+    '"currency": "EUR",' +
+    '"description": "Build effective applications in C# and .NET Core by using proven programming practices and design techniques."' +
+    '}]';
+  Result := TJSONObject.ParseJSONValue(s)  as TJSONArray;
+end;
+
+function TTestImportCommand.ImportReaderReports(const token: string)
+  : TJSONArray;
+var
+  s: string;
+begin
+  s := '[{"firstname": "Sobieraj", "lastname": "Stanislaw",' +
+    '"email": "staszek.sobieraj@empik.com","company": "",' +
+    '"book-isbn": "978-1788621304",' +
+    '"book-title": "Delphi Cookbook - Third Edition",' + '"rating": 10,' +
+    '"oppinion": "Great! There are lots of an easy to implement recepies. Very useful for the future. I recommend it to an every Delphi developer.",'
+    + '"created": "2018-07-27T18:30:49Z"' +
+    '},{'+   (* *)
+    '"firstname": "Gervasio","lastname": "Brancato",' +
+    '"email": "rervasio3419@email.it","company": "Komerci",' +
+    '"book-isbn": "978-1941266038",' + '"book-title": "Coding in Delphi",' +
+    '"rating": 9,' +
+    '"oppinion": "This must-read book highlights the importance writung of clean and resposible code in Delphi.",'
+    + '"created": "2018-08-15T20:12:31Z"' + '}]';
+  Result := TJSONObject.ParseJSONValue(s)  as TJSONArray;
 end;
 
 end.
