@@ -149,7 +149,7 @@ begin
   // Import new Books data from OpenAPI
   //
   { TODO 2: [A] Extract method. Read comments and use meaningful name }
-  jsBooks := ImportBooksFromWebService(Client_API_Token);
+  jsBooks := TWebServiceBooks.ImportBooks(Client_API_Token);
   try
     for i := 0 to jsBooks.Count - 1 do
     begin
@@ -191,7 +191,7 @@ begin
   // - Load JSON from WebService
   // - Validate JSON and insert new a Readers into the Database
   //
-  jsData := ImportReaderReportsFromWebService(Client_API_Token);
+  jsData := TWebServiceBooks.ImportReaderReports(Client_API_Token);
   { TODO 2: [D] Extract method. Block try-catch is separate responsibility }
   try
     for i := 0 to jsData.Count - 1 do
