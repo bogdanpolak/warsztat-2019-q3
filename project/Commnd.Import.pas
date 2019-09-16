@@ -31,6 +31,7 @@ type
     FFConfigBooks: TBooksListBoxConfigurator;
     FpnMain: TPanel;
     FChromeTabs1: TChromeTabs;
+    FDataModMain: TDataModMain;
   protected
     procedure Guard; override;
   public
@@ -41,18 +42,24 @@ type
     // ---
     property FBooksConfig: TBooksListBoxConfigurator read FFConfigBooks
       write FFConfigBooks;
-    property pnMain: TPanel read FpnMain write FpnMain;
-    property ChromeTabs1: TChromeTabs read FChromeTabs1 write FChromeTabs1;
+    property MainFormFramePanel: TPanel read FpnMain write FpnMain;
+    property MainFormChromeTabs: TChromeTabs read FChromeTabs1
+      write FChromeTabs1;
+    property MainDataModule: TDataModMain read FDataModMain write FDataModMain;
   end;
 
 implementation
 
-uses Helper.TApplication, Helper.TDBGrid, Helper.TJSONObject;
+uses
+  Helper.TApplication,
+  Helper.TDBGrid,
+  Helper.TJSONObject;
 
 procedure TImportCommand.Guard;
 begin
   inherited;
   Assert(FBooksConfig <> nil);
+  Assert(MainDataModule <> nil);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -122,7 +129,6 @@ var
   rating: Integer;
   oppinion: string;
   ss: array of string;
-  v: string;
   dtReported: TDateTime;
   readerId: Variant;
   b: TBook;
@@ -163,8 +169,8 @@ begin
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
         // Currency, Imported, Description
-        DataModMain.mtabBooks.InsertRecord([b.isbn, b.title, b.author, b.status,
-          b.releseDate, b.pages, b.price, b.currency, b.imported,
+        MainDataModule.mtabBooks.InsertRecord([b.isbn, b.title, b.author,
+          b.status, b.releseDate, b.pages, b.price, b.currency, b.imported,
           b.description]);
       end;
     end;
@@ -181,13 +187,13 @@ begin
   //
   { TODO 2: [B] Extract method. Read comments and use meaningful }
   // Look for ChromeTabs1.Tabs.Add for code duplication
-  if Assigned(pnMain) and Assigned(ChromeTabs1) then
+  if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
   begin
-    frm := TFrameImport.Create(pnMain);
-    frm.Parent := pnMain;
+    frm := TFrameImport.Create(MainFormFramePanel);
+    frm.Parent := MainFormFramePanel;
     frm.Visible := True;
     frm.Align := Vcl.Controls.alClient;
-    tab := ChromeTabs1.Tabs.Add;
+    tab := MainFormChromeTabs.Tabs.Add;
     tab.Caption := 'Readers';
     tab.Data := frm;
   end;
@@ -198,7 +204,7 @@ begin
   //
   { TODO 2: [C] Move code down separate bussines logic from GUI }
   // warning for dataset dependencies, discuss TDBGrid dependencies
-  if Assigned(pnMain) and Assigned(ChromeTabs1) then
+  if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
   begin
     DataSrc1 := TDataSource.Create(frm);
     DBGrid1 := TDBGrid.Create(frm);
@@ -206,7 +212,7 @@ begin
     DBGrid1.Parent := frm;
     DBGrid1.Align := Vcl.Controls.alClient;
     DBGrid1.DataSource := DataSrc1;
-    DataSrc1.DataSet := DataModMain.mtabReaders;
+    DataSrc1.DataSet := MainDataModule.mtabReaders;
     DBGrid1.AutoSizeColumns();
   end;
   // ----------------------------------------------------------
@@ -275,20 +281,20 @@ begin
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
       // Find the Reader in then database using an email address
-      readerId := DataModMain.FindReaderByEmil(email);
+      readerId := MainDataModule.FindReaderByEmil(email);
       // ----------------------------------------------------------------
       //
       // Append a new reader into the database if requred:
       if System.Variants.VarIsNull(readerId) then
       begin
         { TODO 2: [G] Extract method }
-        readerId := DataModMain.GetMaxValueInDataSet(DataModMain.mtabReaders,
-          'ReaderId') + 1;
+        readerId := MainDataModule.GetMaxValueInDataSet
+          (MainDataModule.mtabReaders, 'ReaderId') + 1;
         //
         // Fields: ReaderId, FirstName, LastName, Email, Company, BooksRead,
         // LastReport, ReadersCreated
         //
-        DataModMain.mtabReaders.AppendRecord([readerId, firstName, lastName,
+        MainDataModule.mtabReaders.AppendRecord([readerId, firstName, lastName,
           email, company, 1, dtReported, Now()]);
       end;
       // ----------------------------------------------------------------
@@ -296,14 +302,14 @@ begin
       // Append report into the database:
       // Fields: ReaderId, ISBN, Rating, Oppinion, Reported
       //
-      DataModMain.mtabReports.AppendRecord([readerId, bookISBN, rating,
+      MainDataModule.mtabReports.AppendRecord([readerId, bookISBN, rating,
         oppinion, dtReported]);
       // ----------------------------------------------------------------
       if Application.InDeveloperMode then
         Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
-    if Assigned(pnMain) and Assigned(ChromeTabs1) then
+    if Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
     begin
       with TSplitter.Create(frm) do
       begin
@@ -319,7 +325,7 @@ begin
       DBGrid2.Align := alBottom;
       DBGrid2.Height := frm.Height div 3;
       DBGrid2.DataSource := DataSrc2;
-      DataSrc2.DataSet := DataModMain.mtabReports;
+      DataSrc2.DataSet := MainDataModule.mtabReports;
       DBGrid2.Margins.Top := 0;
       DBGrid2.AutoSizeColumns();
     end;

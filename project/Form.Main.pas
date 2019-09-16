@@ -222,9 +222,10 @@ begin
   cmdImportReports := TImportCommand.Create(Self);
   with cmdImportReports do
   begin
-    ChromeTabs1 := Self.ChromeTabs1;
-    pnMain := Self.pnMain;
+    MainFormChromeTabs := Self.ChromeTabs1;
+    MainFormFramePanel := Self.pnMain;
     FBooksConfig := Self.FBooksConfig;
+    MainDataModule := Data.Main.DataModMain;
   end;
   btnImport.Action := TCommandAction.Create(Self);
   with (btnImport.Action as TCommandAction) do
