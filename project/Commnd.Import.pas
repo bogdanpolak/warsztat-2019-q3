@@ -40,6 +40,8 @@ type
     procedure BuildAndSetupVisualComponents;
   protected
     procedure Guard; override;
+    function ImportReaderReports(const token: string): TJSONArray; virtual;
+    function ImportBooks(const token: string): TJSONArray; virtual;
   public
     class function BooksToDateTime(const s: string): TDateTime; static;
     class procedure ValidateReadersReport(jsRow: TJSONObject; email: string;
@@ -70,6 +72,16 @@ begin
   Assert(BookProxy <> nil);
   Assert(ReaderProxy <> nil);
   Assert(ReportProxy <> nil);
+end;
+
+function TImportCommand.ImportBooks(const token: string): TJSONArray;
+begin
+  Result := TWebServiceBooks.ImportBooks(Client_API_Token);
+end;
+
+function TImportCommand.ImportReaderReports(const token: string): TJSONArray;
+begin
+  Result := TWebServiceBooks.ImportReaderReports(Client_API_Token);
 end;
 
 class function TImportCommand.BooksToDateTime(const s: string): TDateTime;
@@ -148,7 +160,7 @@ begin
   // Import new Books data from OpenAPI
   //
   { TODO 2: [A] Extract method. Read comments and use meaningful name }
-  jsBooks := TWebServiceBooks.ImportBooks(Client_API_Token);
+  jsBooks := Self.ImportBooks(Client_API_Token);
   try
     for i := 0 to jsBooks.Count - 1 do
     begin
@@ -190,7 +202,7 @@ begin
   // - Load JSON from WebService
   // - Validate JSON and insert new a Readers into the Database
   //
-  jsData := TWebServiceBooks.ImportReaderReports(Client_API_Token);
+  jsData := Self.ImportReaderReports(Client_API_Token);
   { TODO 2: [D] Extract method. Block try-catch is separate responsibility }
   try
     for i := 0 to jsData.Count - 1 do
