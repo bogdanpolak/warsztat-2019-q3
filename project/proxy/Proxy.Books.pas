@@ -93,9 +93,7 @@ begin
     FieldDefs.Add('Status', ftWideString, 15);
     FieldDefs.Add('ReleseDate', ftDate);
     FieldDefs.Add('Pages', ftInteger);
-    with FieldDefs.AddFieldDef do begin
-      Name := 'Price';  DataType := ftBCD;  Precision := 12;  Size := 2;
-    end;
+    FieldDefs.Add('Price', ftCurrency);
     FieldDefs.Add('Currency', ftWideString, 10);
     FieldDefs.Add('Imported', ftDateTime);
     FieldDefs.Add('Description', ftWideString, 2000);
