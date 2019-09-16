@@ -4,3 +4,7 @@ Warsztaty BSC - Modernizacja projektów VCL. Na ratunek projektom: Wybijanie i u
 # Katowice
 
 https://github.com/bogdanpolak/warsztat-2019-q3/pull/1
+
+# Warszawa
+
+https://github.com/bogdanpolak/warsztat-2019-q3/pull/2
