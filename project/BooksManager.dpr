@@ -28,7 +28,12 @@ uses
   Commnd.Import in 'Commnd.Import.pas',
   Helper.TApplication in 'Helper.TApplication.pas',
   Helper.TDBGrid in 'Helper.TDBGrid.pas',
-  Helper.TJSONObject in 'Helper.TJSONObject.pas';
+  Helper.TJSONObject in 'Helper.TJSONObject.pas',
+  Data.DataProxy.Factory in 'proxy\Data.DataProxy.Factory.pas',
+  Data.DataProxy in 'proxy\Data.DataProxy.pas',
+  Proxy.Books in 'proxy\Proxy.Books.pas',
+  Proxy.Readers in 'proxy\Proxy.Readers.pas',
+  Proxy.Reports in 'proxy\Proxy.Reports.pas';
 
 {$R *.res}
 
