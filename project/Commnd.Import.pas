@@ -21,22 +21,23 @@ uses
   ClientAPI.Books,
   ClientAPI.Readers,
   Consts.Application,
-  ExtGUI.ListBox.Books,
   Proxy.Books,
   Proxy.Readers,
-  Proxy.Reports;
+  Proxy.Reports,
+  Model.Books;
 
 type
   TImportCommand = class(TCommand)
   const
     Client_API_Token = '20be805d-9cea27e2-a588efc5-1fceb84d-9fb4b67c';
   private
-    FFConfigBooks: TBooksListBoxConfigurator;
     FpnMain: TPanel;
     FChromeTabs1: TChromeTabs;
     FBookProxy: TBooksProxy;
     FReaderProxy: TReaderProxy;
     FReportProxy: TReportProxy;
+    FBooks: TBookCollection;
+    FOnAddNewBook: TProc<TBook>;
     procedure BuildAndSetupVisualComponents;
   protected
     procedure Guard; override;
@@ -46,11 +47,11 @@ type
       var dtReported: TDateTime); static;
     procedure Execute; override;
     // ---
-    property FBooksConfig: TBooksListBoxConfigurator read FFConfigBooks
-      write FFConfigBooks;
     property MainFormFramePanel: TPanel read FpnMain write FpnMain;
     property MainFormChromeTabs: TChromeTabs read FChromeTabs1
       write FChromeTabs1;
+    property OnAddNewBook: TProc<TBook> read FOnAddNewBook write FOnAddNewBook;
+    property Books: TBookCollection read FBooks write FBooks;
     property BookProxy: TBooksProxy read FBookProxy write FBookProxy;
     property ReaderProxy: TReaderProxy read FReaderProxy write FReaderProxy;
     property ReportProxy: TReportProxy read FReportProxy write FReportProxy;
@@ -66,7 +67,7 @@ uses
 procedure TImportCommand.Guard;
 begin
   inherited;
-  Assert(FBooksConfig <> nil);
+  Assert(Books <> nil);
   Assert(BookProxy <> nil);
   Assert(ReaderProxy <> nil);
   Assert(ReportProxy <> nil);
@@ -165,10 +166,12 @@ begin
       b.currency := jsBook.Values['currency'].Value;
       b.description := jsBook.Values['description'].Value;
       b.imported := Now();
-      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
+      b2 := Books.FindByISBN(b.isbn);
       if not Assigned(b2) then
       begin
-        FBooksConfig.InsertNewBook(b);
+        Books.Add(b);
+        if Assigned(FOnAddNewBook) then
+          FOnAddNewBook(b);
         // ----------------------------------------------------------------
         // Append report into the database:
         // Fields: ISBN, Title, Authors, Status, ReleseDate, Pages, Price,
@@ -242,7 +245,7 @@ begin
       // Locate book by ISBN
       //
       { TODO 2: [G] Extract method }
-      b := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
+      b := Books.FindByISBN(bookISBN);
       if not Assigned(b) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
@@ -315,7 +318,8 @@ begin
   //
   { TODO 2: [C] Move code down separate bussines logic from GUI }
   // warning for dataset dependencies, discuss TDBGrid dependencies
-  if Assigned(frm) and Assigned(MainFormFramePanel) and Assigned(MainFormChromeTabs) then
+  if Assigned(frm) and Assigned(MainFormFramePanel) and
+    Assigned(MainFormChromeTabs) then
   begin
     DBGrid1 := TDBGrid.Create(frm);
     DBGrid1.AlignWithMargins := True;
