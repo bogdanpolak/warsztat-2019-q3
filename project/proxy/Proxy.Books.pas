@@ -8,7 +8,8 @@ uses
   Data.DataProxy,
   System.Classes,
   System.SysUtils,
-  FireDAC.Comp.Client;
+  FireDAC.Comp.Client,
+  Model.Books;
 
 type
   TBooksProxy = class(TDatasetProxy)
@@ -27,6 +28,7 @@ type
     procedure ConnectFields; override;
   public
     class function CreateMockTable (AOwner: TComponent): TFDMemTable;
+    function ConstructBookModel: TBook;
     // ---
     property ISBN :TWideStringField read FISBN;
     property Title :TWideStringField read FTitle;
@@ -60,6 +62,23 @@ begin
 end;
 
 // -----------------------------------------------------------
+
+function TBooksProxy.ConstructBookModel: TBook;
+begin
+  Result := TBook.Create();
+  with Result do begin
+    isbn := Self.ISBN.Value;
+    title := Self.Title.Value;
+    author := Self.Authors.Value;
+    status := Self.Status.Value;
+    releseDate := Self.ReleseDate.Value;
+    pages := Self.Pages.Value;
+    price := Self.Price.Value;
+    currency := Self.Currency.Value;
+    imported := Self.Imported.Value;
+    description := Self.Description.Value;
+  end;
+end;
 
 class function TBooksProxy.CreateMockTable (AOwner: TComponent): TFDMemTable;
 var

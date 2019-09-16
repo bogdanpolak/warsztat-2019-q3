@@ -5,11 +5,10 @@ interface
 uses
   System.Classes,
   System.SysUtils,
-  System.Generics.Collections,
-  Proxy.Books;
+  System.Generics.Collections;
 
 type
-  TBook2 = class
+  TBook = class
     status: string;
     title: string;
     isbn: string;
@@ -22,17 +21,20 @@ type
     description: string;
   end;
 
-  TBookCollection2 = class(TObjectList<TBook2>)
+  TBookCollection = class(TObjectList<TBook>)
+  private
   protected
   public
-    function FindByISBN (const ISBN: string): TBook2;
+    function FindByISBN (const ISBN: string): TBook;
+    function ConstructBooksAvaliable: TBookCollection;
+    function ConstructBooksOnShelf: TBookCollection;
   end;
 
 implementation
 
-function TBookCollection2.FindByISBN(const ISBN: string): TBook2;
+function TBookCollection.FindByISBN(const ISBN: string): TBook;
 var
-  b: TBook2;
+  b: TBook;
 begin
   for b in Self do
     if b.isbn = ISBN then
@@ -41,6 +43,26 @@ begin
       exit;
     end;
   Result := nil;
+end;
+
+function TBookCollection.ConstructBooksOnShelf: TBookCollection;
+var
+  b: TBook;
+begin
+  Result := TBookCollection.Create(false);
+  for b in Self do
+    if b.status = 'on-shelf' then
+      Result.Add(b)
+end;
+
+function TBookCollection.ConstructBooksAvaliable: TBookCollection;
+var
+  b: TBook;
+begin
+  Result := TBookCollection.Create(false);
+  for b in Self do
+    if b.status = 'avaliable' then
+      Result.Add(b)
 end;
 
 end.

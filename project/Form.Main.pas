@@ -22,7 +22,9 @@ uses
   Data.DataProxy.Factory,
   Proxy.Books,
   Proxy.Readers,
-  Proxy.Reports;
+  Proxy.Reports,
+  Data.Main,
+  Model.Books;
 
 type
   TForm1 = class(TForm)
@@ -45,10 +47,16 @@ type
       TabChangeType: TTabChangeType);
     procedure FormResize(Sender: TObject);
     procedure Splitter1Moved(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
   private
+    Books: TBookCollection;
     FBooksConfig: TBooksListBoxConfigurator;
     cmdImportReports: TImportCommand;
+    BookProxy: TBooksProxy;
+    ReaderProxy: TReaderProxy;
+    ReportProxy: TReportProxy;
     procedure OnFormReady;
+    procedure OnFormTearDown;
     procedure AutoSizeBooksGroupBoxes();
     procedure BuildDBGridForBooks_InternalQA(frm: TFrameWelcome);
     class function DBVersionToString(VerDB: Integer): string; static;
@@ -56,6 +64,8 @@ type
     function ConnectToDatabaseServer(frm: TFrameWelcome): Boolean;
     function IsCorrectDatabaseVersionNumber(frm: TFrameWelcome): Boolean;
     procedure BuildCommandsAndActions;
+    procedure BuildDataProxies(MainDataModule: TDataModMain);
+    procedure ConstructModels ();
   public
     FDConnection1: TFDConnectionMock;
   end;
@@ -72,7 +82,6 @@ uses
   Utils.CipherAES128,
   Frame.Import,
   Utils.General,
-  Data.Main,
   Consts.SQL,
   Helper.TJSONObject,
   Helper.TApplication,
@@ -95,6 +104,11 @@ resourcestring
   SDBErrorSelect = 'Can''t execute SELECT command on the database';
   StrNotSupportedDBVersion = 'Not supported database version. Please' +
     ' update database structures.';
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+  OnFormTearDown;
+end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
@@ -222,6 +236,27 @@ begin
   Result := (VerDB div 1000).ToString + '.' + (VerDB mod 1000).ToString;
 end;
 
+
+procedure TForm1.BuildDataProxies (MainDataModule: TDataModMain);
+begin
+  BookProxy := TDataProxyFactory.CreateProxy<TBooksProxy>(Self,
+    MainDataModule.mtabBooks);
+  ReaderProxy := TDataProxyFactory.CreateProxy<TReaderProxy>(Self,
+    MainDataModule.mtabReaders);
+  ReportProxy := TDataProxyFactory.CreateProxy<TReportProxy>(Self,
+    MainDataModule.mtabReports);
+end;
+
+procedure TForm1.ConstructModels;
+begin
+  Books := TBookCollection.Create (true);
+  BookProxy.ForEach(
+    procedure
+    begin
+      Books.Add( BookProxy.ConstructBookModel );
+    end);
+end;
+
 procedure TForm1.BuildCommandsAndActions;
 begin
   cmdImportReports := TImportCommand.Create(Self);
@@ -230,12 +265,9 @@ begin
     MainFormChromeTabs := Self.ChromeTabs1;
     MainFormFramePanel := Self.pnMain;
     FBooksConfig := Self.FBooksConfig;
-    BookProxy := TDataProxyFactory.CreateProxy<TBooksProxy>(Self,
-      DataModMain.mtabBooks);
-    ReaderProxy := TDataProxyFactory.CreateProxy<TReaderProxy>(Self,
-      DataModMain.mtabReaders);
-    ReportProxy := TDataProxyFactory.CreateProxy<TReportProxy>(Self,
-      DataModMain.mtabReports);
+    BookProxy := Self.BookProxy;
+    ReaderProxy := Self.ReaderProxy;
+    ReportProxy := Self.ReportProxy;
 
   end;
   btnImport.Action := TCommandAction.Create(Self);
@@ -334,6 +366,8 @@ begin
   if not IsCorrectDatabaseVersionNumber(frm) then
     exit;
   DataModMain.OpenDataSets;
+  BuildDataProxies (DataModMain);
+  ConstructModels ();
   // ----------------------------------------------------------
   // ----------------------------------------------------------
   //
@@ -343,6 +377,7 @@ begin
   // * Setup OwnerDraw mode
   //
   FBooksConfig := TBooksListBoxConfigurator.Create(Self);
+  FBooksConfig.Books := self.Books;
   FBooksConfig.PrepareListBoxes(lbxBooksReaded, lbxBooksAvaliable2);
   // ----------------------------------------------------------
   // ----------------------------------------------------------
@@ -353,6 +388,11 @@ begin
   begin
     BuildDBGridForBooks_InternalQA(frm);
   end;
+end;
+
+procedure TForm1.OnFormTearDown;
+begin
+  FreeAndNil (Books);
 end;
 
 end.

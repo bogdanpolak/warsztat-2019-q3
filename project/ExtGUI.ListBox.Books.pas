@@ -6,30 +6,8 @@ uses
   System.Classes, Vcl.StdCtrls, Vcl.Controls, System.Types, Vcl.Graphics,
   Winapi.Windows,
   System.JSON, System.Generics.Collections,
-  DataAccess.Books;
-
-{ TODO 3: [C] Move class into the separate unit: Model.Book.pas }
-// with or without Book Collection?
-type
-  TBook = class
-    status: string;
-    title: string;
-    isbn: string;
-    author: string;
-    releseDate: TDateTime;
-    pages: integer;
-    price: currency;
-    currency: string;
-    imported: TDateTime;
-    description: string;
-    constructor Create(Books: IBooksDAO); overload;
-  end;
-
-  TBookCollection = class(TObjectList<TBook>)
-  public
-    procedure LoadDataSet(BooksDAO: IBooksDAO);
-    function FindByISBN (const ISBN: string): TBook;
-  end;
+  DataAccess.Books,
+  Model.Books;
 
 type
   TBookListKind = (blkAll, blkOnShelf, blkAvaliable);
@@ -40,12 +18,11 @@ type
   // Add new unit: Model.Books.pas
   TBooksListBoxConfigurator = class(TComponent)
   private
-    FAllBooks: TBookCollection;
+    FBooks: TBookCollection;
     FListBoxOnShelf: TListBox;
     FListBoxAvaliable: TListBox;
-    FBooksOnShelf: TBookCollection;
-    FBooksAvaliable: TBookCollection;
     DragedIdx: integer;
+    procedure Guard;
     procedure EventOnStartDrag(Sender: TObject; var DragObject: TDragObject);
     procedure EventOnDragDrop(Sender, Source: TObject; X, Y: integer);
     procedure EventOnDragOver(Sender, Source: TObject; X, Y: integer;
@@ -54,12 +31,11 @@ type
       State: TOwnerDrawState);
   public
     constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
     { TODO 3: Introduce 3 properties: ListBoxOnShelf, ListBoxAvaliable, Books }
     procedure PrepareListBoxes(lbxOnShelf, lbxAvaliable: TListBox);
-    function GetBookList (kind: TBookListKind): TBookCollection; 
-    function FindBook (isbn: string): TBook;
+    function ConstructBookList (kind: TBookListKind): TBookCollection;
     procedure InsertNewBook (b:TBook);
+    property Books: TBookCollection read FBooks write FBooks;
   end;
 
 implementation
@@ -68,94 +44,90 @@ uses
   DataAccess.Books.FireDAC, Data.Main;
 
 constructor TBooksListBoxConfigurator.Create(AOwner: TComponent);
-var
-  b: TBook;
-  BooksDAO: IBooksDAO;
 begin
   inherited;
   // ---------------------------------------------------
-  FAllBooks := TBookCollection.Create();
-  { TODO 3: Discuss how to remove this dependency. Check implentation uses }
-  BooksDAO := GetBooks_FireDAC(DataModMain.mtabBooks);
-  FAllBooks.LoadDataSet(BooksDAO);
-  // ---------------------------------------------------
-  FBooksOnShelf := TBookCollection.Create(false);
-  FBooksAvaliable := TBookCollection.Create(false);
-  for b in FAllBooks do
+  (*
+  FBooksOnShelf := TBookCollection2.Create(false);
+  FBooksAvaliable := TBookCollection2.Create(false);
+  for b in Books do
   begin
     if b.status = 'on-shelf' then
       FBooksOnShelf.Add(b)
     else if b.status = 'avaliable' then
       FBooksAvaliable.Add(b)
   end;
+  *)
 end;
 
-destructor TBooksListBoxConfigurator.Destroy;
-begin
-  FAllBooks.Free;
-  FBooksOnShelf.Free;
-  FBooksAvaliable.Free;
-  inherited;
-end;
 
-function TBooksListBoxConfigurator.GetBookList (kind: TBookListKind):
+function TBooksListBoxConfigurator.ConstructBookList (kind: TBookListKind):
   TBookCollection;
 begin
   case kind of
-    blkAll: Result := FAllBooks;
-    blkOnShelf: Result := FBooksOnShelf;
-    blkAvaliable: Result := FBooksAvaliable
+    blkAll: Result := Books;
+    blkOnShelf: Result := Books.ConstructBooksOnShelf;
+    blkAvaliable: Result := Books.ConstructBooksAvaliable;
     else Result := nil;
   end;
 end;
 
-procedure TBooksListBoxConfigurator.InsertNewBook(b: TBook);
+procedure TBooksListBoxConfigurator.Guard;
 begin
-  FAllBooks.Add(b);
-  { TODO 2: [A] Code duplication, look on the TBooksListBoxConfigurator.Create }
-  if b.status = 'on-shelf' then
-    FBooksOnShelf.Add(b)
-  else if b.status = 'avaliable' then
-    FBooksAvaliable.Add(b);
-  FListBoxAvaliable.AddItem(b.title,b);
+  Assert( Books <> nil );
+  Assert( Books <> nil );
 end;
 
-function TBooksListBoxConfigurator.FindBook (isbn: string): TBook;
+procedure TBooksListBoxConfigurator.InsertNewBook(b: TBook);
 begin
-  Result := FAllBooks.FindByISBN (isbn);
+  // TODO: Remove Books.Add(b); (use Find in Files)
+  Books.Add(b);
+  // ------------
+  Guard;
+  FListBoxAvaliable.AddItem(b.title,b);
 end;
 
 procedure TBooksListBoxConfigurator.PrepareListBoxes(lbxOnShelf,
   lbxAvaliable: TListBox);
 var
   b: TBook;
+  ABooksAvaliable: TBookCollection;
+  ABooksOnShelf: TBookCollection;
 begin
+  Guard;
   FListBoxOnShelf := lbxOnShelf;
   FListBoxAvaliable := lbxAvaliable;
   { TODO 2: Repeated code. Violation of the DRY rule }
   // New private method: SetupListBox
   // -----------------------------------------------------------------
   // ListBox: books on the shelf
-  for b in FBooksOnShelf do
-    FListBoxOnShelf.AddItem(b.title, b);
-  FListBoxOnShelf.OnDragDrop := EventOnDragDrop;
-  FListBoxOnShelf.OnDragOver := EventOnDragOver;
-  FListBoxOnShelf.OnStartDrag := EventOnStartDrag;
-  FListBoxOnShelf.OnDrawItem := EventOnDrawItem;
-  FListBoxOnShelf.Style := lbOwnerDrawFixed;
-  FListBoxOnShelf.DragMode := dmAutomatic;
-  FListBoxOnShelf.ItemHeight := 50;
-  // -----------------------------------------------------------------
-  // ListBox: books avaliable
-  for b in FBooksAvaliable do
-    FListBoxAvaliable.AddItem(b.title, b);
-  FListBoxAvaliable.OnDragDrop := EventOnDragDrop;
-  FListBoxAvaliable.OnDragOver := EventOnDragOver;
-  FListBoxAvaliable.OnStartDrag := EventOnStartDrag;
-  FListBoxAvaliable.OnDrawItem := EventOnDrawItem;
-  FListBoxAvaliable.Style := lbOwnerDrawFixed;
-  FListBoxAvaliable.DragMode := dmAutomatic;
-  FListBoxAvaliable.ItemHeight := 50;
+  ABooksOnShelf := Books.ConstructBooksOnShelf;
+  ABooksAvaliable := Books.ConstructBooksAvaliable;
+  try
+    for b in ABooksOnShelf do
+      FListBoxOnShelf.AddItem(b.title, b);
+    FListBoxOnShelf.OnDragDrop := EventOnDragDrop;
+    FListBoxOnShelf.OnDragOver := EventOnDragOver;
+    FListBoxOnShelf.OnStartDrag := EventOnStartDrag;
+    FListBoxOnShelf.OnDrawItem := EventOnDrawItem;
+    FListBoxOnShelf.Style := lbOwnerDrawFixed;
+    FListBoxOnShelf.DragMode := dmAutomatic;
+    FListBoxOnShelf.ItemHeight := 50;
+    // -----------------------------------------------------------------
+    // ListBox: books avaliable
+    for b in ABooksAvaliable do
+      FListBoxAvaliable.AddItem(b.title, b);
+    FListBoxAvaliable.OnDragDrop := EventOnDragDrop;
+    FListBoxAvaliable.OnDragOver := EventOnDragOver;
+    FListBoxAvaliable.OnStartDrag := EventOnStartDrag;
+    FListBoxAvaliable.OnDrawItem := EventOnDrawItem;
+    FListBoxAvaliable.Style := lbOwnerDrawFixed;
+    FListBoxAvaliable.DragMode := dmAutomatic;
+    FListBoxAvaliable.ItemHeight := 50;
+  finally
+    ABooksOnShelf.Free;
+    ABooksAvaliable.Free;
+  end;
 end;
 
 procedure TBooksListBoxConfigurator.EventOnStartDrag(Sender: TObject;
@@ -163,6 +135,7 @@ procedure TBooksListBoxConfigurator.EventOnStartDrag(Sender: TObject;
 var
   lbx: TListBox;
 begin
+  Guard;
   lbx := Sender as TListBox;
   DragedIdx := lbx.ItemIndex;
 end;
@@ -173,23 +146,11 @@ var
   lbx2: TListBox;
   lbx1: TListBox;
   b: TBook;
-  srcList: TBookCollection;
-  dstList: TBookCollection;
 begin
+  Guard;
   lbx1 := Source as TListBox;
   lbx2 := Sender as TListBox;
   b := lbx1.Items.Objects[DragedIdx] as TBook;
-  if lbx1 = FListBoxOnShelf then
-  begin
-    srcList := FBooksOnShelf;
-    dstList := FBooksAvaliable;
-  end
-  else
-  begin
-    srcList := FBooksAvaliable;
-    dstList := FBooksOnShelf;
-  end;
-  dstList.Add(srcList.Extract(b));
   lbx1.Items.Delete(DragedIdx);
   lbx2.AddItem(b.title, b);
 end;
@@ -213,6 +174,7 @@ var
   colorBackground: integer;
   colorGutter: integer;
 begin
+  Guard;
   // TOwnerDrawState = set of (odSelected, odGrayed, odDisabled, odChecked,
   // odFocused, odDefault, odHotLight, odInactive, odNoAccel, odNoFocusRect,
   // odReserved1, odReserved2, odComboBoxEdit);
@@ -260,47 +222,6 @@ begin
   DrawText(ACanvas.Handle, PChar(s), Length(s), r2,
     // DT_LEFT or DT_WORDBREAK or DT_CALCRECT);
     DT_LEFT or DT_WORDBREAK);
-end;
-
-{ TBookCollection }
-
-procedure TBookCollection.LoadDataSet(BooksDAO: IBooksDAO);
-begin
-  BooksDAO.ForEach(
-    procedure(Books: IBooksDAO)
-    begin
-      self.Add(TBook.Create(Books));
-    end);
-end;
-
-function TBookCollection.FindByISBN (const ISBN: string): TBook;
-var
-  b: TBook;
-begin
-  for b in Self do
-    if b.isbn = ISBN then
-    begin
-      Result := b;
-      exit;
-    end;
-  Result := nil;
-end;
-
-{ TBook }
-
-constructor TBook.Create(Books: IBooksDAO);
-begin
-  inherited Create;
-  self.isbn := Books.fldISBN.Value;
-  self.title := Books.fldTitle.Value;
-  self.author := Books.fldAuthors.Value;
-  self.status := Books.fldStatus.Value;
-  self.releseDate := Books.fldReleseDate.Value;
-  self.pages := Books.fldPages.Value;
-  self.price := Books.fldPrice.Value;
-  self.currency := Books.fldCurrency.Value;
-  self.imported := Books.fldImported.Value;
-  self.description := Books.fldDescription.Value;
 end;
 
 end.

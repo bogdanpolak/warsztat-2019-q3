@@ -24,7 +24,8 @@ uses
   ExtGUI.ListBox.Books,
   Proxy.Books,
   Proxy.Readers,
-  Proxy.Reports;
+  Proxy.Reports,
+  Model.Books;
 
 type
   TImportCommand = class(TCommand)
@@ -165,7 +166,7 @@ begin
       b.currency := jsBook.Values['currency'].Value;
       b.description := jsBook.Values['description'].Value;
       b.imported := Now();
-      b2 := FBooksConfig.GetBookList(blkAll).FindByISBN(b.isbn);
+      b2 := FBooksConfig.ConstructBookList(blkAll).FindByISBN(b.isbn);
       if not Assigned(b2) then
       begin
         FBooksConfig.InsertNewBook(b);
@@ -242,7 +243,7 @@ begin
       // Locate book by ISBN
       //
       { TODO 2: [G] Extract method }
-      b := FBooksConfig.GetBookList(blkAll).FindByISBN(bookISBN);
+      b := FBooksConfig.ConstructBookList(blkAll).FindByISBN(bookISBN);
       if not Assigned(b) then
         raise Exception.Create('Invalid book isbn');
       // ----------------------------------------------------------------
