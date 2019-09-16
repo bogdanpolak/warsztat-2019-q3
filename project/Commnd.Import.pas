@@ -68,7 +68,7 @@ type
 implementation
 
 uses
-  Helper.TApplication,
+  // Helper.TApplication,
   Helper.TDBGrid,
   Helper.TJSONObject;
 
@@ -151,7 +151,6 @@ var
   bookTitle: string;
   rating: Integer;
   oppinion: string;
-  ss: array of string;
   dtReported: TDateTime;
   readerId: Variant;
   b: TBook;
@@ -290,9 +289,6 @@ begin
       //
       ReportProxy.AppendRecord([readerId, bookISBN, rating, oppinion,
         dtReported]);
-      // ----------------------------------------------------------------
-      if Application.InDeveloperMode then
-        Insert([rating.ToString], ss, maxInt);
     end;
     // ----------------------------------------------------------------
     BuildAndSetupVisualComponents;
@@ -369,7 +365,6 @@ function TTestImportCommand.ImportBooks(const token: string): TJSONArray;
 var
   s: string;
 begin
-  inherited;
   s := '[{' +
 		'"status": "cooming-soon",' +
     '"title": "Hands-On Design Patterns with C# and .NET Core",' +

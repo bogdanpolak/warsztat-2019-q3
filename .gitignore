@@ -98,3 +98,4 @@ __recovery/
 
 .DS_Store
 .vscode
+tests/Win32/Debug/
