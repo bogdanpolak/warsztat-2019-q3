@@ -28,6 +28,7 @@ type
     procedure ConnectFields; override;
   public
     class function CreateMockTable(AOwner: TComponent): TFDMemTable;
+    constructor CreateMock(AOwner: TComponent);
     function ConstructBookModel: TBook;
     // ---
     property ISBN: TWideStringField read FISBN;
@@ -79,6 +80,27 @@ begin
     Imported := Self.Imported.Value;
     Description := Self.Description.Value;
   end;
+end;
+
+constructor TBooksProxy.CreateMock(AOwner: TComponent);
+begin
+  inherited;
+  Self.FDataSet := TFDMemTable.Create(AOwner);
+  with (Self.FDataSet as TFDMemTable) do
+  begin
+    FieldDefs.Add('ISBN', ftWideString, 20);
+    FieldDefs.Add('Title', ftWideString, 100);
+    FieldDefs.Add('Authors', ftWideString, 100);
+    FieldDefs.Add('Status', ftWideString, 15);
+    FieldDefs.Add('ReleseDate', ftDate);
+    FieldDefs.Add('Pages', ftInteger);
+    FieldDefs.Add('Price', ftCurrency);
+    FieldDefs.Add('Currency', ftWideString, 10);
+    FieldDefs.Add('Imported', ftDateTime);
+    FieldDefs.Add('Description', ftWideString, 2000);
+    CreateDataSet;
+  end;
+  ConnectFields;
 end;
 
 class function TBooksProxy.CreateMockTable(AOwner: TComponent): TFDMemTable;
