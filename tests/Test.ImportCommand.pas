@@ -46,7 +46,7 @@ end;
 function TImportCommandFixture.ConstructBooks(BookProxy: TBooksProxy)
   : TBookCollection;
 var
-  Books :TBookCollection;
+  Books: TBookCollection;
 begin
   Books := TBookCollection.Create(True);
   BookProxy.ForEach(
