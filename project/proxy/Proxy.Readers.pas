@@ -25,6 +25,7 @@ type
   protected
     procedure ConnectFields; override;
   public
+    constructor CreateMock(AOwner: TComponent); virtual;
     class function CreateMockTable(AOwner: TComponent): TFDMemTable;
     // ---
     function generateNewUniqueID: integer;
@@ -55,6 +56,24 @@ begin
   FLastReport := FDataSet.FieldByName('LastReport') as TDateTimeField;
   FCreated := FDataSet.FieldByName('Created') as TDateTimeField;
   Assert(FDataSet.Fields.Count = ExpectedFieldCount);
+end;
+
+constructor TReaderProxy.CreateMock(AOwner: TComponent);
+begin
+  inherited;
+  Self.FDataSet := TFDMemTable.Create(AOwner);
+  with Self.FDataSet as TFDMemTable do
+  begin
+    FieldDefs.Add('ReaderId', ftInteger);
+    FieldDefs.Add('FirstName', ftWideString, 100);
+    FieldDefs.Add('LastName', ftWideString, 100);
+    FieldDefs.Add('Email', ftWideString, 50);
+    FieldDefs.Add('Company', ftWideString, 100);
+    FieldDefs.Add('BooksRead', ftInteger);
+    FieldDefs.Add('LastReport', ftDateTime);
+    FieldDefs.Add('Created', ftDateTime);
+    CreateDataSet;
+  end;
 end;
 
 class function TReaderProxy.CreateMockTable(AOwner: TComponent): TFDMemTable;
