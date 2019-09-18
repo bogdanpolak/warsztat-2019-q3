@@ -11,6 +11,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
+  OnClose = FormClose
   OnCreate = FormCreate
   OnResize = FormResize
   PixelsPerInch = 96
@@ -448,7 +449,6 @@ object Form1: TForm1
       Align = alTop
       Caption = 'btnImport'
       TabOrder = 2
-      OnClick = btnImportClick
     end
   end
   object tmrAppReady: TTimer

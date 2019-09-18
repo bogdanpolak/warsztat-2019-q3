@@ -18,12 +18,22 @@ uses
   DataAccess.Books in 'experimental\DataAccess.Books.pas',
   DataAccess.Books.FireDAC in 'experimental\DataAccess.Books.FireDAC.pas',
   ClientAPI.Books in 'api\ClientAPI.Books.pas',
-  ClientAPI.Readers in 'api\ClientAPI.Readers.pas',
   ExtGUI.ListBox.Books in 'ExtGUI.ListBox.Books.pas',
   DataAccess.Readers.FireDAC in 'experimental\DataAccess.Readers.FireDAC.pas',
   DataAccess.Readers in 'experimental\DataAccess.Readers.pas',
   Scripts.Readers in 'experimental\Scripts.Readers.pas',
-  Consts.SQL in 'Consts.SQL.pas';
+  Consts.SQL in 'Consts.SQL.pas',
+  Vcl.Pattern.Command in 'Vcl.Pattern.Command.pas',
+  Commnd.Import in 'Commnd.Import.pas',
+  Helper.TApplication in 'Helper.TApplication.pas',
+  Helper.TDBGrid in 'Helper.TDBGrid.pas',
+  Helper.TJSONObject in 'Helper.TJSONObject.pas',
+  Data.DataProxy.Factory in 'proxy\Data.DataProxy.Factory.pas',
+  Data.DataProxy in 'proxy\Data.DataProxy.pas',
+  Proxy.Books in 'proxy\Proxy.Books.pas',
+  Proxy.Readers in 'proxy\Proxy.Readers.pas',
+  Proxy.Reports in 'proxy\Proxy.Reports.pas',
+  Model.Books in 'model\Model.Books.pas';
 
 {$R *.res}
 
